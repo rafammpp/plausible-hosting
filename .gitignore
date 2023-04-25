@@ -2,3 +2,4 @@ backup/
 *.env
 *.mmdb
 geonames.csv
+plausible-backups/
