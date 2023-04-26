@@ -5,22 +5,26 @@ services:
     restart: always
 
   plausible_db:
+    container_name: plausible_db
     image: postgres:14-alpine
     restart: always
     volumes:
       - db-data:/var/lib/postgresql/data
-      - ./plausible-backups/postgres:/backup
+      - ./backup/postgres:/backup
     environment:
       - POSTGRES_PASSWORD=postgres
 
   plausible_events_db:
+    container_name: plausible_events_db
     image: clickhouse/clickhouse-server:22.6-alpine
     restart: always
     volumes:
       - event-data:/var/lib/clickhouse
       - ./clickhouse/clickhouse-config.xml:/etc/clickhouse-server/config.d/logging.xml:ro
       - ./clickhouse/clickhouse-user-config.xml:/etc/clickhouse-server/users.d/logging.xml:ro
-      - ./plausible-backups/clickhouse:/backup
+      - ./clickhouse/local-backup.xml:/etc/clickhouse-server/config.d/local-backup.xml:ro
+      - ./backup/clickhouse:/backup
+
     ulimits:
       nofile:
         soft: 262144

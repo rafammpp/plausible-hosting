@@ -5,24 +5,27 @@ if ! [ -x "$(command -v aws)" ]; then
   exit 1
 fi
 
-
 # Variables
-BACKUP_DIR=plausible-backups
-S3_BUCKET=your-bucket-name
+BACKUP_DIR=backup
+S3_BUCKET=backups-hostinger
 POSTGRES_CONTAINER=plausible_db
 CLICKHOUSE_CONTAINER=plausible_events_db
 # Create backup directory
 mkdir -p $BACKUP_DIR/postgres
 mkdir -p $BACKUP_DIR/clickhouse
 
+chmod -R 777 $BACKUP_DIR
 
-docker compose exec $POSTGRES_CONTAINER sh -c "pg_dump -U postgres plausible_db > /backup/plausible_db-$(date +%Y-%m-%d).bak"
+docker exec $POSTGRES_CONTAINER sh -c "pg_dump -U postgres plausible_db > /backup/plausible_db-$(date +%Y-%m-%d).bak";
 
-# TODO we need clickhouse backup image
-docker compose exec $CLICKHOUSE_CONTAINER sh -c "clickhouse-backup > /backup/clickhouse-$(date +%Y-%m-%d).tar.gz"
+docker exec $CLICKHOUSE_CONTAINER sh -c "clickhouse-client --query \"BACKUP DATABASE plausible_events_db TO Disk('backup_disk', 'db.zip')\" && chmod 777 /backup/db.zip";
 
-# # Upload backups to S3
-# aws s3 cp $BACKUP_DIR s3://$S3_BUCKET --recursive
+mv $BACKUP_DIR/clickhouse/db.zip $BACKUP_DIR/clickhouse/plausible_events_db-$(date +%Y-%m-%d).zip;
 
-# # delete local backups
-# rm -rf $BACKUP_DIR
+# Upload backups to S3
+aws s3 cp $BACKUP_DIR s3://$S3_BUCKET/plausible --recursive
+
+# delete local backups
+find $BACKUP_DIR -type f -delete
+
+# TODO DELETE OLD BACKUPS
