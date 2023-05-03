@@ -4,11 +4,10 @@ if ! [ -x "$(command -v aws)" ]; then
   echo 'Error: aws cli is not installed.' >&2
   exit 1
 fi
-SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 
+SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 cd $SCRIPT_DIR;
-touch test-actual-dir.txt
-exit 0;
+
 
 # Variables
 BACKUP_DIR=backup
