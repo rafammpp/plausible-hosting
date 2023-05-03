@@ -20,7 +20,7 @@ mkdir -p $BACKUP_DIR/clickhouse
 
 chmod -R 777 $BACKUP_DIR
 
-docker exec $POSTGRES_CONTAINER sh -c "pg_dump -U postgres plausible_db > /backup/plausible_db-$(date +%Y-%m-%d).bak";
+docker exec $POSTGRES_CONTAINER sh -c "pg_dump -U postgres plausible_db --format=tar > /backup/plausible_db-$(date +%Y-%m-%d).tar";
 
 docker exec $CLICKHOUSE_CONTAINER sh -c "clickhouse-client --query \"BACKUP DATABASE plausible_events_db TO Disk('backup_disk', 'db.zip')\" && chmod 777 /backup/db.zip";
 
