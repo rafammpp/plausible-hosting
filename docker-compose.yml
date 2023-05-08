@@ -1,6 +1,7 @@
 version: "3.3"
 services:
   mail:
+    container_name: plausible_mail
     image: bytemark/smtp
     restart: always
 
@@ -31,10 +32,8 @@ services:
         hard: 262144
 
   plausible:
-    image: plausible/analytics:latest
-    volumes:
-      - ./geonames.csv:/etc/app/geonames.csv:ro
-      - ./geolite2-city.mmdb:/etc/app/geolite2-city.mmdb:ro
+    container_name: plausible
+    image: plausible/analytics:v2.0.0-rc.0
     restart: always
     command: sh -c "sleep 10 && /entrypoint.sh db createdb && /entrypoint.sh db migrate && /entrypoint.sh run"
     depends_on:

@@ -9,9 +9,12 @@ fi
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 cd $SCRIPT_DIR;
 
+source plausible-conf.env;
+
 # Variables
 BACKUP_DIR=backup
-S3_BUCKET=backups-hostinger
+PLAUSIBLE_CONTAINER=plausible
+MAIL_CONTAINER=plausible_mail
 POSTGRES_CONTAINER=plausible_db
 CLICKHOUSE_CONTAINER=plausible_events_db
 
@@ -28,8 +31,7 @@ aws s3 cp s3://backups-hostinger/plausible/postgres/$last_postgres_bk $BACKUP_DI
 last_clickhouse_bk=$( aws s3 ls s3://backups-hostinger/plausible/clickhouse/ | sort | tail -n 1 | awk '{print $4}' );
 aws s3 cp s3://backups-hostinger/plausible/clickhouse/$last_clickhouse_bk $BACKUP_DIR/clickhouse/$last_clickhouse_bk;
 
-docker compose down --remove-orphans;
-docker compose up $POSTGRES_CONTAINER $CLICKHOUSE_CONTAINER -d;
+docker compose stop $PLAUSIBLE_CONTAINER $MAIL_CONTAINER;
 
 # Wait for containers to start
 sleep 10;
@@ -44,7 +46,7 @@ docker exec $CLICKHOUSE_CONTAINER clickhouse-client --query "DROP DATABASE plaus
 docker exec $CLICKHOUSE_CONTAINER clickhouse-client --query "CREATE DATABASE plausible_events_db";
 docker exec $CLICKHOUSE_CONTAINER clickhouse-client --query "RESTORE DATABASE plausible_events_db FROM Disk('backup_disk', '$last_clickhouse_bk')";
 
-docker compose up -d;
+docker compose start $PLAUSIBLE_CONTAINER $MAIL_CONTAINER;
 
 # delete local backups
 find $BACKUP_DIR -type f -delete
