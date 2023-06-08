@@ -17,7 +17,7 @@ openssl rand -base64 64 | tr -d '\n' ; echo
 Copy the generated key, we need it in the next step.
 
 
-Create plausible-conf.env at the root of this project, add this vars and set your actual values after the equal sig, no quotes or spaces. Paste the generated key from the previous step at `SECRECT_KEY_BASE` Check this if you have any doubts https://plausible.io/docs/self-hosting-configuration about any specific configuration.
+Create plausible-conf.env at the root of this project, add this vars and set your actual values after the equal sig, no quotes or spaces. Paste the generated key from the previous step at `SECRET_KEY_BASE` Check this if you have any doubts https://plausible.io/docs/self-hosting-configuration about any specific configuration.
 For the geolocalization db follow this link and create a license key https://www.maxmind.com/en/accounts/current/license-key, then paste at `MAXMIND_LICENSE_KEY`.
 ```
 BASE_URL=
@@ -60,3 +60,14 @@ This will download the last backup of both databases, **drop the actual tables**
 ```bash
 ./restore-db.sh
 ```
+## Increase the api keys request limit
+Api keys has a default limit of 600 request per hour. If you wanna change it do this:
+```bash
+docker exec -it plausible_db psql -U postgres -d plausible_db
+```
+That will open a postgresql shell connected to our plausible_db.
+Then update the column hourly_request_limit. To do this for all api_keys:
+```sql
+UPDATE api_keys SET hourly_request_limit = 2147483647;
+```
+That will set the limit to the highest posible value.
