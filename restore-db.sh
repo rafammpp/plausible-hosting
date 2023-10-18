@@ -13,8 +13,8 @@ source plausible-conf.env;
 
 # Variables
 BACKUP_DIR=backup
-PLAUSIBLE_CONTAINER=plausible
-MAIL_CONTAINER=plausible_mail
+PLAUSIBLE_SERVICE=plausible
+MAIL_SERVICE=mail
 POSTGRES_CONTAINER=plausible_db
 CLICKHOUSE_CONTAINER=plausible_events_db
 
@@ -31,7 +31,7 @@ aws s3 cp s3://backups-hostinger/plausible/postgres/$last_postgres_bk $BACKUP_DI
 last_clickhouse_bk=$( aws s3 ls s3://backups-hostinger/plausible/clickhouse/ | sort | tail -n 1 | awk '{print $4}' );
 aws s3 cp s3://backups-hostinger/plausible/clickhouse/$last_clickhouse_bk $BACKUP_DIR/clickhouse/$last_clickhouse_bk;
 
-docker compose stop $PLAUSIBLE_CONTAINER $MAIL_CONTAINER;
+docker compose stop $PLAUSIBLE_SERVICE $MAIL_SERVICE;
 
 # Wait for containers to start
 sleep 10;
@@ -46,7 +46,7 @@ docker exec $CLICKHOUSE_CONTAINER clickhouse-client --query "DROP DATABASE plaus
 docker exec $CLICKHOUSE_CONTAINER clickhouse-client --query "CREATE DATABASE plausible_events_db";
 docker exec $CLICKHOUSE_CONTAINER clickhouse-client --query "RESTORE DATABASE plausible_events_db FROM Disk('backup_disk', '$last_clickhouse_bk')";
 
-docker compose start $PLAUSIBLE_CONTAINER $MAIL_CONTAINER;
+docker compose start $PLAUSIBLE_SERVICE $MAIL_SERVICE;
 
 # delete local backups
 find $BACKUP_DIR -type f -delete
