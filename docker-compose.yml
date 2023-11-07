@@ -1,12 +1,10 @@
 version: "3.3"
 services:
   mail:
-    container_name: plausible_mail
     image: bytemark/smtp
     restart: always
 
   plausible_db:
-    container_name: plausible_db
     image: postgres:14-alpine
     restart: always
     volumes:
@@ -16,7 +14,6 @@ services:
       - POSTGRES_PASSWORD=postgres
 
   plausible_events_db:
-    container_name: plausible_events_db
     image: clickhouse/clickhouse-server:22.6-alpine
     restart: always
     volumes:
@@ -32,7 +29,6 @@ services:
         hard: 262144
 
   plausible:
-    container_name: plausible
     image: plausible/analytics:v2.0.0-rc.0
     restart: always
     command: sh -c "sleep 10 && /entrypoint.sh db createdb && /entrypoint.sh db migrate && /entrypoint.sh run"
@@ -44,6 +40,28 @@ services:
       - 8000:8000
     env_file:
       - plausible-conf.env
+
+  nginx:
+    image: nginx:1.24.0-alpine
+    restart: always
+    volumes:
+      - ./reverse-proxy/nginx/plausible:/etc/nginx/nginx.conf
+      # - ./reverse-proxy/nginx/conf.d:/etc/nginx/conf.d:ro
+      # - ./reverse-proxy/nginx/ssl:/etc/nginx/ssl:ro
+    ports:
+      - 8080:80
+      - 44443:443
+    depends_on:
+      - plausible
+  
+  crontab:
+    build: ./crontab
+    restart: always
+    volumes:
+      - ./backup:/backup
+      - ./reverse-proxy/nginx/:/etc/nginx/nginx.conf
+    depends_on:
+      - nginx
 
 volumes:
   db-data:

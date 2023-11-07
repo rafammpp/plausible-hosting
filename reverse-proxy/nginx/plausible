@@ -1,9 +1,9 @@
 server {
 	# replace example.com with your domain name
-	server_name example.com;
+	server_name ${NGINX_HOST};
 	
-	listen 80;
-	listen [::]:80;
+	listen ${NGINX_PORT};
+	listen [::]:${NGINX_PORT};
 
 	location / {
 		proxy_pass http://127.0.0.1:8000;
