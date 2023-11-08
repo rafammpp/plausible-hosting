@@ -29,7 +29,7 @@ services:
         hard: 262144
 
   plausible:
-    image: plausible/analytics:v2.0.0-rc.0
+    image: plausible/analytics:v2.0.0
     restart: always
     command: sh -c "sleep 10 && /entrypoint.sh db createdb && /entrypoint.sh db migrate && /entrypoint.sh run"
     depends_on:
@@ -53,15 +53,23 @@ services:
       - 44443:443
     depends_on:
       - plausible
+    secrets:
+      - plausible-conf
   
   crontab:
     build: ./crontab
     restart: always
     volumes:
       - ./backup:/backup
-      - ./reverse-proxy/nginx/:/etc/nginx/nginx.conf
+      - ./reverse-proxy/nginx/plausible:/etc/nginx/nginx.conf
+      - ./aws:/root/.aws
+      
     depends_on:
       - nginx
+      - plausible_db
+      - plausible_events_db
+    secrets:
+      - plausible-conf
 
 volumes:
   db-data:
@@ -70,3 +78,7 @@ volumes:
     driver: local
   geoip:
     driver: local
+
+secrets:
+  plausible-conf:
+    file: ./plausible-conf.env

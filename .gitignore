@@ -3,3 +3,4 @@ backup/
 *.mmdb
 geonames.csv
 plausible-backups/
+aws/
