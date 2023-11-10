@@ -4,3 +4,4 @@ backup/
 geonames.csv
 plausible-backups/
 aws/
+nginx-reverse-proxy/plausible.conf
