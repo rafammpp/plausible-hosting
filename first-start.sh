@@ -26,6 +26,6 @@ for domain in "${domains[@]}"; do
 	}
 }
 
-' >> nginx-reverse-proxyplausible;
+' >> nginx-reverse-proxy/plausible.conf;
 done
 

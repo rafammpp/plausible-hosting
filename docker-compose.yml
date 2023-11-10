@@ -45,7 +45,7 @@ services:
     image: nginx:1.24.0-alpine
     restart: always
     volumes:
-      - ./nginx-reverse-proxyplausible:/etc/nginx/nginx.conf
+      - ./nginx-reverse-proxy/plausible.conf:/etc/nginx/nginx.conf
       # - ./nginx-reverse-proxyconf.d:/etc/nginx/conf.d:ro
       # - ./nginx-reverse-proxyssl:/etc/nginx/ssl:ro
     ports:
@@ -61,7 +61,7 @@ services:
     restart: always
     volumes:
       - ./backup:/backup
-      - ./nginx-reverse-proxyplausible:/etc/nginx/nginx.conf
+      - ./nginx-reverse-proxy/plausible.conf:/etc/nginx/nginx.conf
       - ./aws:/root/.aws
       
     depends_on:
