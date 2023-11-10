@@ -13,7 +13,7 @@ chmod 777 /backup/db.zip;
 
 mv /backup/clickhouse/db.zip /backup/clickhouse/plausible_events_db-$(date +%Y-%m-%d-%H%M%S).zip;
 
-# Upload backups to S3
+# Upload backups to R2
 aws s3 cp /backup s3://$R2_BUCKET/$SERVER_NAME --recursive --endpoint-url $R2_ENDPOINT;
 
 # delete local backups
