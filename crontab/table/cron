@@ -7,5 +7,5 @@
 # │ │ │ │ │
 # │ │ │ │ │
 # * * * * * <command to execute>
-0 4 * * * * /backup-db.sh
-0 1 * * * /usr/bin/certbot renew --quiet
+  0 4 * * * /backup-db.sh
+  0 1 * * * /usr/bin/certbot renew --quiet

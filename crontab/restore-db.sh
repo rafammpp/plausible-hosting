@@ -19,7 +19,7 @@ aws s3 cp s3://$R2_BUCKET/$SERVER_NAME/clickhouse/$last_clickhouse_bk /backup/cl
 # Restore postgres backup
 # dropdb -U postgres plausible_db;
 # createdb -U postgres plausible_db;
-pg_restore -h plausible_db -d plausible_db --clean /backup/$last_postgres_bk;
+pg_restore -h plausible_db -d plausible_db --clean /backup/postgres/$last_postgres_bk;
 
 # Restore clickhouse backup/opusdei.org
 clickhouse-client -h plausible_events_db --query "DROP DATABASE plausible_events_db";

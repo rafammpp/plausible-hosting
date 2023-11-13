@@ -50,8 +50,7 @@ events {
     worker_connections 1024;
 }
 
-http {
-' > nginx-reverse-proxy/nginx.conf;
+http {' > nginx-reverse-proxy/nginx.conf;
 for domain in "${domains[@]}"; do
     echo "
     server {
