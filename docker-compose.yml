@@ -65,6 +65,7 @@ services:
       - ./nginx-reverse-proxy/:/etc/nginx/
       - ./aws/:/root/.aws/
       - ./crontab/letsencrypt/conf/:/etc/letsencrypt/
+      - ./crontab/letsencrypt/www:/var/www/certbot
       - ./logs/:/logs/
     depends_on:
       - nginx
