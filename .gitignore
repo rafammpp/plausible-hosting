@@ -6,3 +6,5 @@ plausible-backups/
 aws/
 nginx-reverse-proxy
 crontab/letsencrypt
+logs/
+*.log

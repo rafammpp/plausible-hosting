@@ -10,6 +10,7 @@ services:
     volumes:
       - db-data:/var/lib/postgresql/data
       - ./backup/postgres:/backup
+      - ./logs/postgres:/var/log/postgresql
     environment:
       - POSTGRES_PASSWORD=postgres
 
@@ -22,6 +23,7 @@ services:
       - ./clickhouse/clickhouse-user-config.xml:/etc/clickhouse-server/users.d/logging.xml:ro
       - ./clickhouse/local-backup.xml:/etc/clickhouse-server/config.d/local-backup.xml:ro
       - ./backup/clickhouse:/backup
+      - ./logs/clickhouse/:/var/log/clickhouse-server/
 
     ulimits:
       nofile:
@@ -46,6 +48,7 @@ services:
       - ./nginx-reverse-proxy:/etc/nginx/
       - ./crontab/letsencrypt/conf:/etc/letsencrypt
       - ./crontab/letsencrypt/www:/var/www/certbot
+      - ./logs/nginx:/var/log/nginx
     ports:
       - 80:80
       - 443:443
@@ -58,12 +61,11 @@ services:
     build: ./crontab
     restart: always
     volumes:
-      - ./backup:/backup
+      - ./backup/:/backup/
       - ./nginx-reverse-proxy/:/etc/nginx/
-      - ./aws:/root/.aws
-      - ./crontab/letsencrypt/conf:/etc/letsencrypt
-      - ./crontab/letsencrypt/www:/var/www/certbot
-
+      - ./aws/:/root/.aws/
+      - ./crontab/letsencrypt/conf/:/etc/letsencrypt/
+      - ./logs/:/logs/
     depends_on:
       - nginx
       - plausible_db
@@ -75,8 +77,6 @@ volumes:
   db-data:
     driver: local
   event-data:
-    driver: local
-  geoip:
     driver: local
 
 secrets:
