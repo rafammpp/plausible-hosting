@@ -52,7 +52,7 @@ while [ ! -d "nginx-reverse-proxy" ]; do
 done
 
 # Check if DOMAINS var exists
-if [ -z "$DOMAINS" ]; then
+if [ -n "$DOMAINS" ]; then
     domains=($DOMAINS);
     echo "Using domains from plausible-conf.env file: ${domains[@]}";
 else
