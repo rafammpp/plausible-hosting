@@ -1,3 +1,7 @@
+# Cleaning nginx and letsencrypt conf before start to avoid errors
+rm -rf nginx-reverse-proxy;
+rm -rf crontab/letsencrypt;
+
 docker compose up -d;
 if [ ! -f 'plausible-conf.env' ]; then
     echo "-----------------------------------------------";
@@ -42,10 +46,21 @@ docker compose exec crontab bash -c "aws s3 rm s3://$R2_BUCKET/test.txt --endpoi
 echo "All good!";
 echo "-----------------------------------------------";
 
+# wait until folder nginx-reverse-proxy is created
+while [ ! -d "nginx-reverse-proxy" ]; do
+    sleep 1;
+done
 
-echo "type any domains you want to add to the plausible server, separated by a space";
-read -a domains;
-echo "# Plausible reverse proxy dummy config for certbot
+# Check if DOMAINS var exists
+if [ -z "$DOMAINS" ]; then
+    domains=($DOMAINS);
+    echo "Using domains from plausible-conf.env file: ${domains[@]}";
+else
+    echo "Type any domains you want to add to the plausible server, separated by a space";
+    read -a domains;
+fi
+
+echo "# Dummy config for certbot
 events {
     worker_connections 1024;
 }
@@ -62,7 +77,7 @@ http {
         }
     }
 }" > nginx-reverse-proxy/nginx.conf;
-docker-compose exec nginx nginx -s reload
+docker compose down nginx && docker compose up -d nginx crontab;
 
 domain_args=""
 for domain in "${domains[@]}"; do
@@ -70,7 +85,7 @@ for domain in "${domains[@]}"; do
 done
 
 echo '-----------------------------------------------';
-echo 'Now generating certificates for the domains you added. You will be prompted to enter your email address and accept the terms of service.';
+echo 'Now generating certificates for the domains you added.';
 echo '-----------------------------------------------';
 docker compose exec crontab bash -c "certbot certonly --webroot -w /var/www/certbot \
     --email $LETS_ENCRYPT_EMAIL \
@@ -79,10 +94,12 @@ docker compose exec crontab bash -c "certbot certonly --webroot -w /var/www/cert
     --cert-name plausible \
     --agree-tos \
     --force-renewal";
-echo '-----------------------------------------------';
+
 echo 'Installing certificates...';
 echo '-----------------------------------------------';
 
+
+# Watch out for $, we need the value of var domains but not $proxy_add_x_forwarded_for, so we use a mix of ' and " to avoid it
 echo "# Plausible reverse proxy
 events {
     worker_connections 1024;
@@ -90,7 +107,7 @@ events {
 
 http {
     server {
-        server_name ${domains[@]};
+        server_name ${domains[@]};"'
         
         listen 80;
         listen [::]:80;
@@ -103,10 +120,10 @@ http {
         location /.well-known/acme-challenge/ {
             root /var/www/certbot;
         }
-    }
+    }'"
     
     server {
-        server_name ${domains[@]};
+        server_name ${domains[@]};"'
 
         listen 443 ssl;
         listen [::]:443 ssl;
@@ -119,8 +136,7 @@ http {
             proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         }
     }
-}" > nginx-reverse-proxy/nginx.conf;
-
+}' > nginx-reverse-proxy/nginx.conf;
 
 echo 'Reloading services...';
 docker compose down && docker compose up -d;
