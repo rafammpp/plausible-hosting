@@ -45,16 +45,52 @@ echo "-----------------------------------------------";
 
 echo "type any domains you want to add to the plausible server, separated by a space";
 read -a domains;
-echo '# Plausible reverse proxy
+echo "# Plausible reverse proxy dummy config for certbot
 events {
     worker_connections 1024;
 }
 
-http {' > nginx-reverse-proxy/nginx.conf;
-for domain in "${domains[@]}"; do
-    echo "
+http {
     server {
-        server_name ${domain};" '
+        server_name ${domains[@]};
+        
+        listen 80;
+        listen [::]:80;
+
+        location /.well-known/acme-challenge/ {
+            root /var/www/certbot;
+        }
+    }
+}" > nginx-reverse-proxy/nginx.conf;
+docker-compose exec nginx nginx -s reload
+
+domain_args=""
+for domain in "${domains[@]}"; do
+  domain_args="$domain_args -d $domain"
+done
+
+echo '-----------------------------------------------';
+echo 'Now generating certificates for the domains you added. You will be prompted to enter your email address and accept the terms of service.';
+echo '-----------------------------------------------';
+docker compose exec crontab bash -c "certbot certonly --webroot -w /var/www/certbot \
+    --email $LETS_ENCRYPT_EMAIL \
+    $domain_args \
+    --non-interactive \
+    --cert-name plausible \
+    --agree-tos \
+    --force-renewal";
+echo '-----------------------------------------------';
+echo 'Installing certificates...';
+echo '-----------------------------------------------';
+
+echo "# Plausible reverse proxy
+events {
+    worker_connections 1024;
+}
+
+http {
+    server {
+        server_name ${domains[@]};
         
         listen 80;
         listen [::]:80;
@@ -67,14 +103,25 @@ for domain in "${domains[@]}"; do
         location /.well-known/acme-challenge/ {
             root /var/www/certbot;
         }
-    }' >> nginx-reverse-proxy/nginx.conf;
-done
-echo '}' >> nginx-reverse-proxy/nginx.conf;
-echo '-----------------------------------------------';
-echo 'Now generating certificates for the domains you added. You will be prompted to enter your email address and accept the terms of service.';
-echo '-----------------------------------------------';
-docker compose exec crontab bash -c 'certbot --nginx';
-echo '-----------------------------------------------';
+    }
+    
+    server {
+        server_name ${domains[@]};
+
+        listen 443 ssl;
+        listen [::]:443 ssl;
+
+        ssl_certificate /etc/letsencrypt/live/plausible/fullchain.pem;
+        ssl_certificate_key /etc/letsencrypt/live/plausible/privkey.pem;
+
+        location / {
+            proxy_pass http://plausible:8000;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        }
+    }
+}" > nginx-reverse-proxy/nginx.conf;
+
+
 echo 'Reloading services...';
 docker compose down && docker compose up -d;
 echo 'Done!';
