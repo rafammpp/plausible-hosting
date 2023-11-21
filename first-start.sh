@@ -46,6 +46,7 @@ docker compose exec crontab bash -c "aws s3 rm s3://$R2_BUCKET/test.txt --endpoi
 echo "All good!";
 echo "-----------------------------------------------";
 
+echo "Waiting for nginx folder to be created";
 # wait until folder nginx-reverse-proxy is created
 while [ ! -d "nginx-reverse-proxy" ]; do
     sleep 1;
