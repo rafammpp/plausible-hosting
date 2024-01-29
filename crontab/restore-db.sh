@@ -1,6 +1,8 @@
 #!/bin/bash
-# restore last backup stored in s3 bucket to a docker postgres and clickhouse container
+# restore last backup stored in r2 bucket to a docker postgres and clickhouse container
 source /run/secrets/plausible-conf;
+export PGUSER=postgres
+export PGPASSWORD=postgres
 
 # Create backup directory
 mkdir -p /backup/postgres;
@@ -9,7 +11,7 @@ mkdir -p /backup/clickhouse;
 chmod -R 777 /backup;
 
 
-# Download last backups from S3
+# Download last backups from r2
 last_postgres_bk=$( aws s3 ls s3://$R2_BUCKET/$SERVER_NAME/postgres/ --endpoint-url $R2_ENDPOINT | sort | tail -n 1 | awk '{print $4}' );
 aws s3 cp s3://$R2_BUCKET/$SERVER_NAME/postgres/$last_postgres_bk /backup/postgres/$last_postgres_bk --endpoint-url $R2_ENDPOINT;
 

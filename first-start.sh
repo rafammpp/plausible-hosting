@@ -2,14 +2,53 @@
 rm -rf nginx-reverse-proxy;
 rm -rf crontab/letsencrypt;
 
+echo "-----------------------------------------------";
+echo "Welcome to the Plausible Analytics server setup!";
+echo "-----------------------------------------------";
+echo "This script will guide you through the setup process.";
+echo "-----------------------------------------------";
+echo "Make sure you have setup domain DNS records to point to this server and fill the variables in plausible-conf.env before continuing. You can find more info about this in the README file.";
+echo "-----------------------------------------------";
+echo "Press any key when you are ready to continue or CTRL+C to exit.";
+echo "-----------------------------------------------";
+read -n 1 -s;
+
+# Check if docker exists
+if ! command -v docker &> /dev/null
+then
+    echo "Installing Docker engine...";
+    # Add Docker's official GPG key:
+    sudo apt-get update
+    sudo apt-get install ca-certificates curl
+    sudo install -m 0755 -d /etc/apt/keyrings
+    sudo curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
+    sudo chmod a+r /etc/apt/keyrings/docker.asc
+
+    # Add the repository to Apt sources:
+    echo \
+    "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu \
+    $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | \
+    sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+    sudo apt-get update
+    sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+fi
+
 docker compose up -d;
 if [ ! -f 'plausible-conf.env' ]; then
     echo "-----------------------------------------------";
     echo "ERROR: plausible-conf.env file not found. Please create it and try again.";
     echo "-----------------------------------------------";
+    docker compose down;
     exit 1;
 fi
 source plausible-conf.env;
+
+# Generate a secret key with openssl if not set
+if [ -z "$SECRET_KEY_BASE" ]; then
+    echo "Generating secret key...";
+    SECRET_KEY_BASE=$(openssl rand -base64 64 | tr -d '\n' ; echo);
+    echo "SECRET_KEY_BASE=$SECRET_KEY_BASE" >> plausible-conf.env;
+fi
 
 # setup aws
 docker compose exec crontab bash -c "aws configure set aws_access_key_id ${R2_ACCESS_KEY_ID}";
@@ -38,6 +77,7 @@ if [ ! -f 'backup/test.txt' ]; then
     echo "-----------------------------------------------";
     rm backup/test.txt;
     docker compose exec crontab bash -c "aws s3 rm s3://$R2_BUCKET/test.txt --endpoint-url $R2_ENDPOINT";
+    docker compose down;
     exit 1;
 fi
 rm backup/test.txt;
@@ -113,6 +153,11 @@ http {
         listen 80;
         listen [::]:80;
 
+        location /robots.txt {
+            add_header Content-Type text/plain;
+            return 200 "User-agent: *\nDisallow: /\n";
+        }
+
         location / {
             proxy_pass http://plausible:8000;
             proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
@@ -132,6 +177,11 @@ http {
         ssl_certificate /etc/letsencrypt/live/plausible/fullchain.pem;
         ssl_certificate_key /etc/letsencrypt/live/plausible/privkey.pem;
 
+        location /robots.txt {
+            add_header Content-Type text/plain;
+            return 200 "User-agent: *\nDisallow: /\n";
+        }
+
         location / {
             proxy_pass http://plausible:8000;
             proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
@@ -142,3 +192,6 @@ http {
 echo 'Reloading services...';
 docker compose down && docker compose up -d;
 echo 'Done!';
+echo '-----------------------------------------------';
+echo "To restore a backup, run the following command:";
+echo "docker compose exec crontab /restore-db.sh";

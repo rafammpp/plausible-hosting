@@ -1,5 +1,7 @@
 #!/bin/bash
 source /run/secrets/plausible-conf;
+export PGUSER=postgres
+export PGPASSWORD=postgres
 
 mkdir -p /backup/postgres;
 mkdir -p /backup/clickhouse;
