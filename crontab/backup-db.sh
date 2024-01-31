@@ -10,9 +10,9 @@ mkdir -p /backup/logs;
 chmod -R 777 /backup;
 echo "Backup started at $(date +%Y-%m-%d-%H%M%S)";
 pg_dump -h plausible_db plausible_db --format=tar > /backup/postgres/plausible_db-$(date +%Y-%m-%d-%H%M%S).tar;
-clickhouse-client --host plausible_events_db --query "BACKUP DATABASE plausible_events_db TO Disk('backup_disk', 'db')";
+clickhouse-client --host plausible_events_db --query "BACKUP DATABASE plausible_events_db TO Disk('backup_disk', 'db.zip')";
 
-mv /backup/clickhouse/db /backup/clickhouse/plausible_events_db-$(date +%Y-%m-%d-%H%M%S);
+mv /backup/clickhouse/db.zip /backup/clickhouse/plausible_events_db-$(date +%Y-%m-%d-%H%M%S).zip;
 
 echo "Uploading backups to R2";
 # Upload backups to R2
