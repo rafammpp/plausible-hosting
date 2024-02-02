@@ -17,9 +17,9 @@ user_agents=(
     "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Ubuntu Chromium/37.0.2062.94 Chrome/37.0.2062.94 Safari/537.36"
 )
 
-# generate fake pageviews
-
-while true ; do
+# generate 1000 fake pageviews
+# while true ; do
+ for i in {1..10000}; do
     curl -i -X POST http://127.0.0.1/api/event \
     -H "User-Agent: ${user_agents[ RANDOM % 10 ]}" \
     -H "X-Forwarded-For: $((RANDOM % 254 + 1 )).$((RANDOM % 255)).$((RANDOM % 255)).$((RANDOM % 254 + 1 ))" \

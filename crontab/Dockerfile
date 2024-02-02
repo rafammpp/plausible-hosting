@@ -1,4 +1,4 @@
-FROM clickhouse/clickhouse-server:22.6-alpine
+FROM clickhouse/clickhouse-server:24.1-alpine
 
 RUN apk update
 RUN apk add --no-cache postgresql-client aws-cli nginx certbot certbot-nginx 
