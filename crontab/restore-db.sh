@@ -15,17 +15,18 @@ chmod -R 777 /backup;
 last_postgres_bk=$( aws s3 ls s3://$R2_BUCKET/$SERVER_NAME/postgres/ --endpoint-url $R2_ENDPOINT | sort | tail -n 1 | awk '{print $4}' );
 aws s3 cp s3://$R2_BUCKET/$SERVER_NAME/postgres/$last_postgres_bk /backup/postgres/$last_postgres_bk --endpoint-url $R2_ENDPOINT;
 
-last_clickhouse_bk=$( aws s3 ls s3://$R2_BUCKET/$SERVER_NAME/clickhouse/ --endpoint-url $R2_ENDPOINT | grep PRE | sort | tail -n 1 | awk '{print $2}' | sed 's:/*$::' ); # backups are in folders, not compressed files
 
-aws s3 cp s3://$R2_BUCKET/$SERVER_NAME/clickhouse/$last_clickhouse_bk /backup/clickhouse/$last_clickhouse_bk --recursive --endpoint-url $R2_ENDPOINT;
+# Restore clickhouse backup, directory format
+#last_clickhouse_bk=$( aws s3 ls s3://$R2_BUCKET/$SERVER_NAME/clickhouse/ --endpoint-url $R2_ENDPOINT | grep PRE | sort | tail -n 1 | awk '{print $2}' | sed 's:/*$::' ); # backups are in folders, not compressed files
 
-# last_clickhouse_bk=$( aws s3 ls s3://$R2_BUCKET/$SERVER_NAME/clickhouse/ --endpoint-url $R2_ENDPOINT | sort | tail -n 1 | awk '{print $4}' );
+# aws s3 cp s3://$R2_BUCKET/$SERVER_NAME/clickhouse/$last_clickhouse_bk /backup/clickhouse/$last_clickhouse_bk --recursive --endpoint-url $R2_ENDPOINT;
+
+# Restore clickhouse backup, zip format
+last_clickhouse_bk=$( aws s3 ls s3://$R2_BUCKET/$SERVER_NAME/clickhouse/ --endpoint-url $R2_ENDPOINT | sort | tail -n 1 | awk '{print $4}' );
 
 aws s3 cp s3://$R2_BUCKET/$SERVER_NAME/clickhouse/$last_clickhouse_bk /backup/clickhouse/$last_clickhouse_bk --endpoint-url $R2_ENDPOINT;
 
 # Restore postgres backup
-# dropdb -U postgres plausible_db;
-# createdb -U postgres plausible_db;
 pg_restore -h plausible_db -d plausible_db --clean /backup/postgres/$last_postgres_bk;
 
 # Restore clickhouse backup
