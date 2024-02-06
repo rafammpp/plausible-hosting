@@ -12,8 +12,8 @@ chmod -R 777 /backup;
 
 
 # Download last backups from r2
-last_postgres_bk=$( aws s3 ls s3://$R2_BUCKET/$SERVER_NAME/postgres/ --endpoint-url $R2_ENDPOINT | sort | tail -n 1 | awk '{print $4}' );
-aws s3 cp s3://$R2_BUCKET/$SERVER_NAME/postgres/$last_postgres_bk /backup/postgres/$last_postgres_bk --endpoint-url $R2_ENDPOINT;
+last_postgres_bk=$( aws s3 ls s3://$R2_BUCKET/$SERVER_NAME/postgres/ --endpoint-url $R2_ENDPOINT --region auto | sort | tail -n 1 | awk '{print $4}' );
+aws s3 cp s3://$R2_BUCKET/$SERVER_NAME/postgres/$last_postgres_bk /backup/postgres/$last_postgres_bk --endpoint-url $R2_ENDPOINT --region auto;
 
 
 # Restore clickhouse backup, directory format
@@ -22,9 +22,9 @@ aws s3 cp s3://$R2_BUCKET/$SERVER_NAME/postgres/$last_postgres_bk /backup/postgr
 # aws s3 cp s3://$R2_BUCKET/$SERVER_NAME/clickhouse/$last_clickhouse_bk /backup/clickhouse/$last_clickhouse_bk --recursive --endpoint-url $R2_ENDPOINT;
 
 # Restore clickhouse backup, zip format
-last_clickhouse_bk=$( aws s3 ls s3://$R2_BUCKET/$SERVER_NAME/clickhouse/ --endpoint-url $R2_ENDPOINT | sort | tail -n 1 | awk '{print $4}' );
+last_clickhouse_bk=$( aws s3 ls s3://$R2_BUCKET/$SERVER_NAME/clickhouse/ --endpoint-url $R2_ENDPOINT --region auto | sort | tail -n 1 | awk '{print $4}' );
 
-aws s3 cp s3://$R2_BUCKET/$SERVER_NAME/clickhouse/$last_clickhouse_bk /backup/clickhouse/$last_clickhouse_bk --endpoint-url $R2_ENDPOINT;
+aws s3 cp s3://$R2_BUCKET/$SERVER_NAME/clickhouse/$last_clickhouse_bk /backup/clickhouse/$last_clickhouse_bk --endpoint-url $R2_ENDPOINT --region auto;
 
 # Restore postgres backup
 pg_restore -h plausible_db -d plausible_db --clean /backup/postgres/$last_postgres_bk;
