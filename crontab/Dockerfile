@@ -23,7 +23,7 @@ COPY ./cron-logs-backup.sh /cron-logs-backup.sh
 COPY ./cron-certbot.sh /cron-certbot.sh
 
 # Give the permission
-RUN chmod 0644 /etc/cron.d/cron && chmod +x /backup-db.sh /restore-db.sh /cron-backup.sh /cron-restore.sh /activity-check.sh /cron-archive.sh /get-server-id-from-ip.sh
+RUN chmod 0644 /etc/cron.d/cron && chmod +x /backup-db.sh /restore-db.sh /cron-backup.sh /cron-restore.sh /activity-check.sh /cron-archive.sh /get-server-id-from-ip.sh /backup-logs.sh /cron-logs-backup.sh /cron-certbot.sh
  
 # Add the cron job
 RUN crontab /etc/cron.d/cron
