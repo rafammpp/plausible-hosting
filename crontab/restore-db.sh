@@ -24,23 +24,23 @@ restored_clickhouse_bk=$(cat /last_clickhouse_bk.txt);
 
 
 # Download last backups from r2
-last_postgres_bk=$( aws s3 ls s3://$R2_BUCKET/$SERVER_NAME/postgres/ --endpoint-url $R2_ENDPOINT --region auto | sort | tail -n 1 | awk '{print $4}' );
+last_postgres_bk=$( aws s3 ls s3://$R2_BUCKET/$RESTORE_FROM_SERVER_NAME/postgres/ --endpoint-url $R2_ENDPOINT --region auto | sort | tail -n 1 | awk '{print $4}' );
 if [[ $last_postgres_bk == $restored_postgres_bk ]]; then
     echo "No new postgres backup to restore";
 else
-    aws s3 cp s3://$R2_BUCKET/$SERVER_NAME/postgres/$last_postgres_bk /backup/postgres/$last_postgres_bk --endpoint-url $R2_ENDPOINT --region auto;
+    aws s3 cp s3://$R2_BUCKET/$RESTORE_FROM_SERVER_NAME/postgres/$last_postgres_bk /backup/postgres/$last_postgres_bk --only-show-errors --endpoint-url $R2_ENDPOINT --region auto;
     # Restore postgres backup
     pg_restore -h plausible_db -d plausible_db --clean /backup/postgres/$last_postgres_bk;
 fi
 
 
 # Restore clickhouse backup, zip format
-last_clickhouse_bk=$( aws s3 ls s3://$R2_BUCKET/$SERVER_NAME/clickhouse/ --endpoint-url $R2_ENDPOINT --region auto | sort | tail -n 1 | awk '{print $4}' );
+last_clickhouse_bk=$( aws s3 ls s3://$R2_BUCKET/$RESTORE_FROM_SERVER_NAME/clickhouse/ --endpoint-url $R2_ENDPOINT --region auto | sort | tail -n 1 | awk '{print $4}' );
 
 if [[ $last_clickhouse_bk == $restored_clickhouse_bk ]]; then
     echo "No new clickhouse backup to restore";
 else
-    aws s3 cp s3://$R2_BUCKET/$SERVER_NAME/clickhouse/$last_clickhouse_bk /backup/clickhouse/$last_clickhouse_bk --endpoint-url $R2_ENDPOINT --region auto;
+    aws s3 cp s3://$R2_BUCKET/$RESTORE_FROM_SERVER_NAME/clickhouse/$last_clickhouse_bk /backup/clickhouse/$last_clickhouse_bk --only-show-errors --endpoint-url $R2_ENDPOINT --region auto;
     # Restore clickhouse backup
     clickhouse-client -h plausible_events_db --query "DROP DATABASE plausible_events_db";
     clickhouse-client -h plausible_events_db --query "CREATE DATABASE plausible_events_db";

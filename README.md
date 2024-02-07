@@ -14,10 +14,10 @@ cd plausible-hosting;
 ```
 
 Create plausible-conf.env at the root of this project, add these vars and set your actual values after the equal sign, no quotes or spaces. Check this if you have any doubts https://plausible.io/docs/self-hosting-configuration about any specific configuration.
-`SERVER_NAME` value is used to name a dir inside the bucket where backups will be uploaded. It has to be different from other servers you have.
+SERVER_NAME var values are used to name dirs inside the bucket where backups will be uploaded and downloaded.
 For the geolocation db, follow this link and create a license key https://www.maxmind.com/en/accounts/current/license-key, then paste it at `MAXMIND_LICENSE_KEY`. For R2, follow this link https://developers.cloudflare.com/r2/api/s3/tokens/
 
-An important var is `FOLLOWER`. If it is set to true, this will make this server never backup and restore from the configured `SERVER_NAME` bucket folder. This is useful if you have two servers, one for receiving pageview events and another for making queries to the data.
+An important var is `FOLLOWER`. If it is set to true, this will make this server never backup the databases and restore from the configured `RESTORE_FROM_SERVER_NAME` bucket folder. This is useful if you have two servers, one for receiving pageview events and another for making queries to the data.
 ```
 BASE_URL=
 MAXMIND_LICENSE_KEY=
@@ -36,7 +36,9 @@ SMTP_RETRIES=2
 
 export PGUSER=postgres
 export PGPASSWORD=postgres
-SERVER_NAME= # for identifying the server in backups
+DISABLE_CRON_SCRIPTS= # to disable all cron automated scripts
+BACKUP_TO_SERVER_NAME=
+RESTORE_FROM_SERVER_NAME=
 R2_BUCKET=
 R2_ACCESS_KEY_ID=
 R2_SECRET_ACCESS_KEY=

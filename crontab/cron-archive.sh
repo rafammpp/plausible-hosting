@@ -1,4 +1,8 @@
 #!/bin/bash
+if [ "$DISABLE_CRON_SCRIPTS" = true ] ; then
+    exit 0;
+fi
+
 source /run/secrets/plausible-conf;
 # script to archive this server on inactivity
 
@@ -17,6 +21,5 @@ if [ "$FOLLOWER" = true ] && [ ! -f /tmp/restore-db.lock ]; then
         curl -s -X POST -H "Content-Type: application/json" -H "X-API-KEY: $CLOUDING_APIKEY" "https://api.clouding.io/v1/servers/$server_id/archive"
     fi
 else 
-    echo "Follower: $FOLLOWER, Restore lock: $(test -f /tmp/restore-db.lock && echo true || echo false)";
     exit 0;
 fi

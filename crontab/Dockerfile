@@ -18,6 +18,9 @@ COPY ./cron-restore.sh /cron-restore.sh
 COPY ./activity-check.sh /activity-check.sh
 COPY ./cron-archive.sh /cron-archive.sh
 COPY ./get-server-id-from-ip.sh /get-server-id-from-ip.sh
+COPY ./backup-logs.sh /backup-logs.sh
+COPY ./cron-logs-backup.sh /cron-logs-backup.sh
+COPY ./cron-certbot.sh /cron-certbot.sh
 
 # Give the permission
 RUN chmod 0644 /etc/cron.d/cron && chmod +x /backup-db.sh /restore-db.sh /cron-backup.sh /cron-restore.sh /activity-check.sh /cron-archive.sh /get-server-id-from-ip.sh
