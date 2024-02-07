@@ -2,8 +2,6 @@
 # restore last backup stored in r2 bucket to a docker postgres and clickhouse container
 # setup a semaphore to avoid multiple restores at the same time
 
-# lock semaphore
-# create a semaphore lock file
 if [ -f /tmp/restore-db.lock ]; then
     echo "Restore already in progress";
     exit 1;
@@ -14,8 +12,6 @@ fi
 source /run/secrets/plausible-conf;
 export PGUSER=postgres
 export PGPASSWORD=postgres
-
-
 
 # Create backup directory
 mkdir -p /backup/postgres;

@@ -1,4 +1,5 @@
 #!/bin/bash
+source /run/secrets/plausible-conf;
 # script to archive this server on inactivity
 
 if [ "$FOLLOWER" = true ] && [ ! -f /tmp/restore-db.lock ]; then
