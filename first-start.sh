@@ -57,15 +57,15 @@ docker compose exec crontab bash -c "aws configure set output json";
 # test aws cli
 echo "-----------------------------------------------";
 echo "Listing bucket for testing aws configuration...";
-docker compose exec crontab bash -c "aws s3 ls s3://$R2_BUCKET/ --endpoint-url $R2_ENDPOINT";
+docker compose exec crontab bash -c "aws s3 ls s3://$R2_BUCKET/ --endpoint-url $R2_ENDPOINT --region auto";
 
 # try to upload a test file to the bucket and check if it's there. If not, exit.
 echo "-----------------------------------------------";
 echo "Testing backup upload...";
 docker compose exec crontab bash -c "echo 'test' > /backup/test.txt";
-docker compose exec crontab bash -c "aws s3 cp /backup/test.txt s3://$R2_BUCKET/ --endpoint-url $R2_ENDPOINT";
+docker compose exec crontab bash -c "aws s3 cp /backup/test.txt s3://$R2_BUCKET/ --endpoint-url $R2_ENDPOINT --region auto";
 docker compose exec crontab bash -c "rm /backup/test.txt";
-docker compose exec crontab bash -c "aws s3 cp s3://$R2_BUCKET/test.txt /backup/test.txt --endpoint-url $R2_ENDPOINT";
+docker compose exec crontab bash -c "aws s3 cp s3://$R2_BUCKET/test.txt /backup/test.txt --endpoint-url $R2_ENDPOINT --region auto";
 # check if the file is there
 if [ ! -f 'backup/test.txt' ]; then
     echo "-----------------------------------------------";
@@ -74,12 +74,12 @@ if [ ! -f 'backup/test.txt' ]; then
     echo "Ensure the bucket exists and the credentials have read/write access to it.";
     echo "-----------------------------------------------";
     rm backup/test.txt;
-    docker compose exec crontab bash -c "aws s3 rm s3://$R2_BUCKET/test.txt --endpoint-url $R2_ENDPOINT";
+    docker compose exec crontab bash -c "aws s3 rm s3://$R2_BUCKET/test.txt --endpoint-url $R2_ENDPOINT --region auto";
     docker compose down;
     exit 1;
 fi
 rm backup/test.txt;
-docker compose exec crontab bash -c "aws s3 rm s3://$R2_BUCKET/test.txt --endpoint-url $R2_ENDPOINT";
+docker compose exec crontab bash -c "aws s3 rm s3://$R2_BUCKET/test.txt --endpoint-url $R2_ENDPOINT --region auto";
 
 echo "All good!";
 echo "-----------------------------------------------";
