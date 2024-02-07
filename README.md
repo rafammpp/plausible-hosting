@@ -20,7 +20,6 @@ For the geolocation db, follow this link and create a license key https://www.ma
 An important var is `FOLLOWER`. If it is set to true, this will make this server never backup and restore from the configured `SERVER_NAME` bucket folder. This is useful if you have two servers, one for receiving pageview events and another for making queries to the data.
 ```
 BASE_URL=
-FOLLOWER=false
 MAXMIND_LICENSE_KEY=
 MAXMIND_EDITION=GeoLite2-City
 DISABLE_REGISTRATION=invite_only
@@ -42,6 +41,11 @@ R2_BUCKET=
 R2_ACCESS_KEY_ID=
 R2_SECRET_ACCESS_KEY=
 R2_ENDPOINT=
+
+# clouding.io settings
+FOLLOWER=false # if set to true, this server will never backup. It will only do a restore from the configured SERVER_NAME bucket folder
+CLOUDING_APIKEY=
+FOLLOWER_TO_WAKEUP=  # the ip of the follower server
 ```
 
 `SECRET_KEY_BASE` Will be generated and put here later by the script itself. But you can place your own if you want.

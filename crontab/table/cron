@@ -8,5 +8,8 @@
 # │ │ │ │ │
 # * * * * * <command to execute>
   0 4 * * * /cron-backup.sh >> /logs/backup-script.log 2>&1
+  @reboot   /usr/bin/certbot renew --quiet >> /logs/certbot-renew.log 2>&1
   0 5 * * * /cron-restore.sh >> /logs/restore-script.log 2>&1
-  0 1 * * * /usr/bin/certbot renew --quiet >> /logs/certbot-renew.log 2>&1
+  @reboot   /cron-restore.sh >> /logs/restore-script.log 2>&1
+  * * * * * /cron-archive.sh >> /logs/archive-script.log 2>&1
+
