@@ -2,12 +2,14 @@
 # restore last backup stored in r2 bucket to a docker postgres and clickhouse container
 # setup a semaphore to avoid multiple restores at the same time
 
-if [ "$RESTORING" = true ]; then
-    echo "Already restoring, skipping";
-    exit 0;
+# lock semaphore
+# create a semaphore lock file
+if [ -f /tmp/restore-db.lock ]; then
+    echo "Restore already in progress";
+    exit 1;
+else
+    touch /tmp/restore-db.lock;
 fi
-
-export RESTORING=true;
 
 source /run/secrets/plausible-conf;
 export PGUSER=postgres
@@ -56,4 +58,4 @@ echo $last_postgres_bk > /last_postgres_bk.txt;
 echo $last_clickhouse_bk > /last_clickhouse_bk.txt;
 
 # unlock semaphore
-export RESTORING=false;
+rm /tmp/restore-db.lock;
