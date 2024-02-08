@@ -1,9 +1,8 @@
 #!/bin/bash
+source /run/secrets/plausible-conf;
 if [ "$DISABLE_CRON_SCRIPTS" = true ] ; then
     exit 0;
 fi
-
-source /run/secrets/plausible-conf;
 # Check if is a follower server or not (follower servers don't need to backup)
 
 if [ "$FOLLOWER" = true ] ; then

@@ -1,9 +1,8 @@
 #!/bin/bash
+source /run/secrets/plausible-conf;
 if [ "$DISABLE_CRON_SCRIPTS" = true ] ; then
     exit 0;
 fi
-
-source /run/secrets/plausible-conf;
 # script to archive this server on inactivity
 
 if [ "$FOLLOWER" = true ] && [ ! -f /tmp/restore-db.lock ]; then
