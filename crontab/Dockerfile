@@ -29,4 +29,5 @@ RUN chmod 0644 /etc/cron.d/cron && chmod +x /backup-db.sh /restore-db.sh /cron-b
 RUN crontab /etc/cron.d/cron
  
 # Run the cron service in the foreground
-CMD [ "crond", "-l", "2", "-L", "/var/log/cron.log", "-f" ]
+CMD date >> /logs/last_start.txt; crond -l 2 -L /var/log/cron.log -f;
+# CMD [ "crond", "-l", "2", "-L", "/var/log/cron.log", "-f" ]
