@@ -4,6 +4,7 @@ if [ "$DISABLE_CRON_SCRIPTS" = true ] ; then
     exit 0;
 fi
 # script to archive this server on inactivity
+echo "Started at $(date +%Y-%m-%d-%H%M%S)";
 
 if [ "$FOLLOWER" = true ] && [ ! -f /tmp/restore-db.lock ]; then
     uptime_seconds=$(awk '{print int($1)}' /proc/uptime);

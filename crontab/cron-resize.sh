@@ -9,7 +9,7 @@ source /run/secrets/plausible-conf;
 if [ -z "$CLOUDING_APIKEY" ] || [ "$DISABLE_AUTORESIZE" ]; then
     exit 0;
 fi
-
+echo "Started at $(date +%Y-%m-%d-%H%M%S)";
 
 last_query=$(tail -n 100 /logs/nginx/access.log | grep /api/stats/ | grep = | grep 200 | tail -n 1 |  grep -o -E "\[.+\]" | sed 's/[][]//g' | sed 's/\//-/g' | sed 's/:/ /' | sed 's/ +0000//');
 

@@ -8,7 +8,7 @@ fi
 if [ "$FOLLOWER" = true ] ; then
     exit 0;
 fi
-
+echo "Started at $(date +%Y-%m-%d-%H%M%S)";
 bash /backup-db.sh;
 
 # if has a follower to unarchive, do it. the var is FOLLWER_TO_WAKEUP, and it's the ip of the follower server

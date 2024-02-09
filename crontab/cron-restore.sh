@@ -8,5 +8,6 @@ fi
 if [ "$FOLLOWER" = false ] || [ -z "$FOLLOWER" ]; then 
     echo "This is not a follower server, skipping restore";
 else
+    echo "Started at $(date +%Y-%m-%d-%H%M%S)";
     bash /restore-db.sh;
 fi

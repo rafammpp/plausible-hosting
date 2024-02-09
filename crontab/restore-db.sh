@@ -19,9 +19,8 @@ mkdir -p /backup/clickhouse;
 
 chmod -R 777 /backup;
 
-restored_postgres_bk=$(cat /last_postgres_bk.txt);
-restored_clickhouse_bk=$(cat /last_clickhouse_bk.txt);
-
+restored_postgres_bk=$(cat /last_bks/postgres.txt);
+restored_clickhouse_bk=$(cat /last_bks/clickhouse.txt);
 
 # Download last backups from r2
 last_postgres_bk=$( aws s3 ls s3://$R2_BUCKET/$RESTORE_FROM_SERVER_NAME/postgres/ --endpoint-url $R2_ENDPOINT --region auto | sort | tail -n 1 | awk '{print $4}' );
@@ -50,8 +49,8 @@ fi
 # delete local backups
 find /backup -type f -delete
 
-echo $last_postgres_bk > /last_postgres_bk.txt;
-echo $last_clickhouse_bk > /last_clickhouse_bk.txt;
+echo $last_postgres_bk > /last_bks/postgres.txt;
+echo $last_clickhouse_bk > /last_bks/clickhouse.txt;
 
 # unlock semaphore
 rm /tmp/restore-db.lock;
