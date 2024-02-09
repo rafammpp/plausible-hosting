@@ -13,6 +13,24 @@ source /run/secrets/plausible-conf;
 export PGUSER=postgres
 export PGPASSWORD=postgres
 
+# check if RESTORE_FROM_SERVER_NAME is set
+if [ -z "$RESTORE_FROM_SERVER_NAME" ]; then
+    echo "RESTORE_FROM_SERVER_NAME is not set";
+    exit 1;
+fi
+# check if R2_BUCKET is set
+if [ -z "$R2_BUCKET" ]; then
+    echo "R2_BUCKET is not set";
+    exit 1;
+fi
+# check if R2_ENDPOINT is set
+if [ -z "$R2_ENDPOINT" ]; then
+    echo "R2_ENDPOINT is not set";
+    exit 1;
+fi
+
+
+
 # Create backup directory
 mkdir -p /backup/postgres;
 mkdir -p /backup/clickhouse;

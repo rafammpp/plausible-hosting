@@ -29,7 +29,5 @@ RUN chmod 0644 /etc/cron.d/cron && chmod +x /backup-db.sh /restore-db.sh /cron-b
 # Add the cron job
 RUN crontab /etc/cron.d/cron
 
-ENTRYPOINT [ "/bin/bash" ]
-
 # Run the cron service in the foreground
 CMD /on-startup.sh; crond -l 2 -L /var/log/cron.log -f;
