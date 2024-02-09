@@ -12,7 +12,7 @@ echo "Backup started at $(date +%Y-%m-%d-%H%M%S)";
 pg_dump -h plausible_db plausible_db --format=tar > /backup/postgres/plausible_db-$(date +%Y-%m-%d-%H%M%S).tar;
 
 # Check all tables before backing up
-# clickhouse-client --host plausible_events_db --query "CHECK ALL TABLES FORMAT PrettyCompactMonoBlock SETTINGS check_query_single_value_result = 0";
+clickhouse-client --host plausible_events_db --query "CHECK ALL TABLES FORMAT PrettyCompactMonoBlock SETTINGS check_query_single_value_result = 0";
 
 clickhouse-client --host plausible_events_db --query "BACKUP DATABASE plausible_events_db TO Disk('backup_disk', 'db.zip')";
 

@@ -67,6 +67,8 @@ services:
       - ./crontab/letsencrypt/conf/:/etc/letsencrypt/
       - ./crontab/letsencrypt/www:/var/www/certbot
       - ./logs/:/logs/
+      - ./crontab/last_postgres_bk.txt:/last_postgres_bk.txt
+      - ./crontab/last_clickhouse_bk.txt:/last_clickhouse_bk.txt
     depends_on:
       - nginx
       - plausible_db
