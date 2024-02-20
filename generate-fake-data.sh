@@ -17,12 +17,20 @@ user_agents=(
     "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Ubuntu Chromium/37.0.2062.94 Chrome/37.0.2062.94 Safari/537.36"
 )
 
-# generate 1000 fake pageviews
-# while true ; do
- for i in {1..10000}; do
-    curl -i -X POST http://127.0.0.1/api/event \
-    -H "User-Agent: ${user_agents[ RANDOM % 10 ]}" \
-    -H "X-Forwarded-For: $((RANDOM % 254 + 1 )).$((RANDOM % 255)).$((RANDOM % 255)).$((RANDOM % 254 + 1 ))" \
-    -H 'Content-Type: application/json' \
-    --data "{\"name\":\"pageview\",\"url\":\"http://opusdei.org/fake-pageview-$((RANDOM % 100))\",\"domain\":\"opusdei.org\"}"
-done
+counter=0;
+while true ; do
+    ip=$((RANDOM % 254 + 1 )).$((RANDOM % 255)).$((RANDOM % 255)).$((RANDOM % 254 + 1 ));
+    user_agent=${user_agents[ RANDOM % 10 ]};
+    range=$((RANDOM % 15 + 1));
+
+    for ((run=1; run <= range; run++)); do
+        curl --silent --output /dev/null -i -X POST http://127.0.0.1/api/event \
+        -H "User-Agent: $user_agent" \
+        -H "X-Forwarded-For: $ip" \
+        -H 'Content-Type: application/json' \
+        --data "{\"name\":\"pageview\",\"url\":\"http://opusdei.org/fake-pageview-$((RANDOM % 100))\",\"domain\":\"opusdei.org\"}"
+        counter=$((counter+1));
+
+        printf "Count:\n%'d\n" $counter;
+    done;
+done;
