@@ -48,6 +48,7 @@ R2_ENDPOINT=
 FOLLOWER=false # if set to true, this server will never backup. It will only do a restore from the configured SERVER_NAME bucket folder
 CLOUDING_APIKEY=
 FOLLOWER_TO_WAKEUP=  # the ip of the follower server
+AUTO_RESIZE_DISK=false # if set to true, the server will resize the disk before restoring if needed.
 ```
 
 `SECRET_KEY_BASE` Will be generated and put here later by the script itself. But you can place your own if you want.

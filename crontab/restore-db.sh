@@ -30,7 +30,6 @@ if [ -z "$R2_ENDPOINT" ]; then
 fi
 
 
-
 # Create backup directory
 mkdir -p /backup/postgres;
 mkdir -p /backup/clickhouse;
@@ -57,6 +56,10 @@ last_clickhouse_bk=$( aws s3 ls s3://$R2_BUCKET/$RESTORE_FROM_SERVER_NAME/clickh
 if [[ $last_clickhouse_bk == $restored_clickhouse_bk ]]; then
     echo "No new clickhouse backup to restore";
 else
+    # get backup size before download
+    bk_size=$(aws s3 ls s3://$R2_BUCKET/$RESTORE_FROM_SERVER_NAME/clickhouse/$last_clickhouse_bk --endpoint-url $R2_ENDPOINT --region auto | awk '{print $3}');
+    bash /resize-disk.sh $bk_size;
+    
     aws s3 cp s3://$R2_BUCKET/$RESTORE_FROM_SERVER_NAME/clickhouse/$last_clickhouse_bk /backup/clickhouse/$last_clickhouse_bk --only-show-errors --endpoint-url $R2_ENDPOINT --region auto;
     # Restore clickhouse backup
     clickhouse-client -h plausible_events_db --query "DROP DATABASE plausible_events_db";
