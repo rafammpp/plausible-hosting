@@ -37,14 +37,23 @@ mkdir crontab/locks;
 touch crontab/locks/restore-db.lock;
 touch crontab/locks/archive.lock;
 
-docker compose up -d;
 if [ ! -f 'plausible-conf.env' ]; then
     echo "-----------------------------------------------";
     echo "ERROR: plausible-conf.env file not found. Please create it and try again.";
     echo "-----------------------------------------------";
-    docker compose down;
     exit 1;
 fi
+
+docker compose up -d;
+
+# check compose up exit code
+if [ $? -ne 0 ]; then
+    echo "-----------------------------------------------";
+    echo "ERROR: Docker compose command failed.";
+    echo "-----------------------------------------------";
+    exit 1;
+fi
+
 source plausible-conf.env;
 
 # Generate a secret key with openssl if not set
