@@ -28,5 +28,5 @@ if [ $current_disk_space -lt $needed_space ]; then
     current_disk_size_GB=$(bash /scripts/get-server-current-size.sh $server_id);
     new_disk_size=$(($current_disk_size_GB + $space_to_add_GB));
 
-    curl -X POST -H "Content-Type: application/json" -H "X-API-KEY: $CLOUDING_APIKEY" -d "{\"volumeSizeGb\": \"$new_disk_size\"}"; "https://api.clouding.io/v1/servers/$server_id/resize";
+    curl -X POST -H "Content-Type: application/json" -H "X-API-KEY: $CLOUDING_APIKEY" -d "{\"volumeSizeGb\": \"$new_disk_size\"}" "https://api.clouding.io/v1/servers/$server_id/resize";
 fi
