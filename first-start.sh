@@ -32,10 +32,11 @@ then
     sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
 fi
 
-# Prevent restoring and archiving while the server is setting up
+# Prevent crons while the server is setting up
 mkdir crontab/locks;
 touch crontab/locks/restore-db.lock;
 touch crontab/locks/archive.lock;
+touch crontab/locks/setting-up.lock;
 
 if [ ! -f 'plausible-conf.env' ]; then
     echo "-----------------------------------------------";
@@ -246,3 +247,4 @@ echo "docker compose exec crontab /scripts/restore-db.sh";
 # Remove locks to allow restoring and archiving
 rm crontab/locks/restore-db.lock;
 rm crontab/locks/archive.lock;
+rm crontab/locks/setting-up.lock;
