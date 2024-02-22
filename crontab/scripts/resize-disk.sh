@@ -13,18 +13,18 @@ fi
 current_disk_space=$(df --output=avail /logs | tail -n 1);
 
 # the needed space in bytes is three time the backup size, it will be passed as argument
-needed_space=$(($1 * 3));
+needed_space_KB=$(($1 * 3 / 1024)); # Convert to KB because df -k returns the available space in KB
 
 
 # if the current disk space is less than the needed space, resize the disk
-if [ $current_disk_space -lt $needed_space ]; then
+if [ $current_disk_space_KB -lt $needed_space_KB ]; then
     echo "Resizing disk";
     server_id=$(bash /scripts/get-server-id-from-ip.sh $(curl -s ifconfig.me));
     if [ -z "$server_id" ]; then
         echo "ERROR: Server not found in clouding.io";
         exit 1;
     fi
-    space_to_add_GB=$(($1 * 4 / 1024 / 1024 / 1024));
+    space_to_add_GB=$(($1 * 4 / 1024 / 1024));
     current_disk_size_GB=$(bash /scripts/get-server-current-size.sh $server_id);
     if [ -z "$current_disk_size_GB" ]; then
         echo "ERROR: Server disk size not found in clouding.io";
