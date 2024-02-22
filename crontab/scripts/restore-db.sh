@@ -5,6 +5,7 @@
 function cleanup {
     echo "Removing locks"
     rm /locks/restore-db.lock;
+    rm /locks/archive.lock;
 }
 
 if [ -f /locks/restore-db.lock ]; then
@@ -12,6 +13,7 @@ if [ -f /locks/restore-db.lock ]; then
     exit 1;
 else
     touch /locks/restore-db.lock;
+    touch /locks/archive.lock;
 fi
 
 trap cleanup EXIT;
