@@ -6,6 +6,6 @@ fi
 
 if [ "$FOLLOWER" = true ] ; then
     echo "Started at $(date +%Y-%m-%d-%H%M%S)";
-    bash /backup-logs.sh;
+    bash /scripts/backup-logs.sh;
     exit 0;
 fi

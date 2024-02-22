@@ -1,5 +1,21 @@
 #!/bin/bash
 source /run/secrets/plausible-conf;
+
+if [ -z "$R2_BUCKET" ]; then
+    echo "R2_BUCKET is not set";
+    exit 1;
+fi
+
+if [ -z "$R2_ENDPOINT" ]; then
+    echo "R2_ENDPOINT is not set";
+    exit 1;
+fi
+
+if [ -z "$BACKUP_TO_SERVER_NAME" ]; then
+    echo "BACKUP_TO_SERVER_NAME is not set";
+    exit 1;
+fi
+
 export PGUSER=postgres
 export PGPASSWORD=postgres
 
@@ -22,6 +38,6 @@ echo "Uploading backups to R2";
 # Upload backups to R2
 aws s3 cp /backup s3://$R2_BUCKET/$BACKUP_TO_SERVER_NAME --recursive --only-show-errors --endpoint-url $R2_ENDPOINT --region auto;
 
-bash /backup-logs.sh;
+bash /scripts/backup-logs.sh;
 
 echo "Backup finished at $(date +%Y-%m-%d-%H%M%S)";

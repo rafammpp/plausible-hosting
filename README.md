@@ -5,7 +5,7 @@ This repository allows you to get up and running with [Plausible Analytics](http
 In addition, it includes several scripts to restore backups of both databases from Cloudflare R2.
 
 ## First install
-Install docker engine: https://docs.docker.com/engine/install/
+If you are not using Ubuntu, install docker engine: https://docs.docker.com/engine/install/. Otherwise, the script will do it for you.
 
 Clone this repository to the server and navigate to the directory.
 ```
@@ -60,7 +60,7 @@ You only need to run this the first time.
 This requires you to have configured R2 vars in plausible-conf.env
 From this folder run this:
 ```bash
-docker compose exec crontab bash -c "/backup-db.sh"
+docker compose exec crontab bash -c "/scripts/backup-db.sh"
 ```
 
 ## Restore last backup from R2
@@ -68,7 +68,7 @@ docker compose exec crontab bash -c "/backup-db.sh"
 
 This will download the last backup of both databases, **drop the existing tables** and then restore.
 ```bash
-docker compose exec crontab bash -c "/restore-db.sh"
+docker compose exec crontab bash -c "/scripts/restore-db.sh"
 ```
 ## Increase the API keys request limit
 API keys have a default limit of 600 requests per hour. If you want to change it to the maximum value, do the following:

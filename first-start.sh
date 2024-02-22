@@ -1,4 +1,5 @@
 # Cleaning nginx and letsencrypt conf before start to avoid errors
+cd "$(dirname "$0")";
 rm -rf nginx-reverse-proxy;
 rm -rf crontab/letsencrypt;
 
@@ -30,6 +31,10 @@ then
     sudo apt-get update
     sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
 fi
+
+# Prevent restoring and archiving while the server is setting up
+touch crontab/locks/restore-db.lock;
+touch crontab/locks/archive.lock;
 
 docker compose up -d;
 if [ ! -f 'plausible-conf.env' ]; then
@@ -225,4 +230,9 @@ docker compose down && docker compose up -d;
 echo 'Done!';
 echo '-----------------------------------------------';
 echo "To restore a backup, run the following command:";
-echo "docker compose exec crontab /restore-db.sh";
+echo "docker compose exec crontab /scripts/restore-db.sh";
+
+
+# Remove locks to allow restoring and archiving
+rm crontab/locks/restore-db.lock;
+rm crontab/locks/archive.lock;

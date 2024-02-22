@@ -9,12 +9,12 @@ if [ "$FOLLOWER" = true ] ; then
     exit 0;
 fi
 echo "Started at $(date +%Y-%m-%d-%H%M%S)";
-bash /backup-db.sh;
+bash /scripts/backup-db.sh;
 
 # if has a follower to unarchive, do it. the var is FOLLWER_TO_WAKEUP, and it's the ip of the follower server
 if [ -n "$FOLLOWER_TO_WAKEUP" ]; then
     echo "Waking up follower server";
-    server_id=$(bash /get-server-id-from-ip.sh $FOLLOWER_TO_WAKEUP);
+    server_id=$(bash /scripts/get-server-id-from-ip.sh $FOLLOWER_TO_WAKEUP);
     if [ -z "$server_id" ]; then
         echo "ERROR: Server '$FOLLOWER_TO_WAKEUP' not found in clouding.io";
         exit 1;

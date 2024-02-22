@@ -68,6 +68,7 @@ services:
       - ./crontab/letsencrypt/www:/var/www/certbot
       - ./logs/:/logs/
       - ./crontab/last_bks/:/last_bks/
+      - ./crontab/locks/:/locks/
     depends_on:
       - nginx
       - plausible_db

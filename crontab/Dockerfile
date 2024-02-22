@@ -6,29 +6,14 @@ RUN apk add --no-cache --update curl coreutils postgresql-client aws-cli nginx c
 # Copy cron file to the container
 COPY ./table/cron /etc/cron.d/cron
 
-# Copy backup script to the container
-COPY ./backup-db.sh /backup-db.sh 
-
-# Copy restore script to the container
-COPY ./restore-db.sh /restore-db.sh
-
 # Copy the cron scripts to the container
-COPY ./cron-backup.sh /cron-backup.sh
-COPY ./cron-restore.sh /cron-restore.sh
-COPY ./activity-check.sh /activity-check.sh
-COPY ./cron-archive.sh /cron-archive.sh
-COPY ./get-server-id-from-ip.sh /get-server-id-from-ip.sh
-COPY ./backup-logs.sh /backup-logs.sh
-COPY ./cron-logs-backup.sh /cron-logs-backup.sh
-COPY ./cron-certbot.sh /cron-certbot.sh
-COPY ./on-startup.sh /on-startup.sh
-COPY ./resize-disk.sh /resize-disk.sh
+COPY ./scripts/ /scripts/
 
-# Give x permission
-RUN chmod 0644 /etc/cron.d/cron && chmod +x /backup-db.sh /restore-db.sh /cron-backup.sh /cron-restore.sh /activity-check.sh /cron-archive.sh /get-server-id-from-ip.sh /backup-logs.sh /cron-logs-backup.sh /cron-certbot.sh /on-startup.sh /resize-disk.sh
+# Give permissions
+RUN chmod 0644 /etc/cron.d/cron && chmod +x /scripts/*
  
 # Add the cron job
 RUN crontab /etc/cron.d/cron
 
 # Run the cron service in the foreground
-CMD /on-startup.sh; crond -l 2 -L /var/log/cron.log -f;
+CMD /scripts/on-startup.sh; crond -l 2 -L /var/log/cron.log -f;

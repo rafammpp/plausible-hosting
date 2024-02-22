@@ -2,11 +2,11 @@
 # restore last backup stored in r2 bucket to a docker postgres and clickhouse container
 # setup a semaphore to avoid multiple restores at the same time
 
-if [ -f /tmp/restore-db.lock ]; then
-    echo "Restore already in progress";
+if [ -f /locks/restore-db.lock ]; then
+    echo "Restore already in progress or locked. Exiting...";
     exit 1;
 else
-    touch /tmp/restore-db.lock;
+    touch /locks/restore-db.lock;
 fi
 
 source /run/secrets/plausible-conf;
@@ -58,7 +58,7 @@ if [[ $last_clickhouse_bk == $restored_clickhouse_bk ]]; then
 else
     # get backup size before download
     bk_size=$(aws s3 ls s3://$R2_BUCKET/$RESTORE_FROM_SERVER_NAME/clickhouse/$last_clickhouse_bk --endpoint-url $R2_ENDPOINT --region auto | awk '{print $3}');
-    bash /resize-disk.sh $bk_size;
+    bash /scripts/resize-disk.sh $bk_size;
     
     aws s3 cp s3://$R2_BUCKET/$RESTORE_FROM_SERVER_NAME/clickhouse/$last_clickhouse_bk /backup/clickhouse/$last_clickhouse_bk --only-show-errors --endpoint-url $R2_ENDPOINT --region auto;
     # Restore clickhouse backup
@@ -74,4 +74,4 @@ echo $last_postgres_bk > /last_bks/postgres.txt;
 echo $last_clickhouse_bk > /last_bks/clickhouse.txt;
 
 # unlock semaphore
-rm /tmp/restore-db.lock;
+rm /locks/restore-db.lock;
