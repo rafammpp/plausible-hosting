@@ -1,6 +1,6 @@
 #!/bin/bash
 source /run/secrets/plausible-conf;
-if [ "$DISABLE_CRON_SCRIPTS" = true ] ; then
+if [ "$DISABLE_CRON_SCRIPTS" = true ] || [ -f /locks/setting-up.lock ]; then
     exit 0;
 fi
 # script to archive this server on inactivity
