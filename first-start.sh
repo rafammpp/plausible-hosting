@@ -154,6 +154,13 @@ if [ "$lets_encrypt" = "y" ]; then
         --agree-tos \
         --force-renewal";
 
+    if [ $? -ne 0 ]; then
+        echo '-----------------------------------------------';
+        echo "ERROR: Certbot command failed. Check if the domains are pointing to this server and try again.";
+        echo '-----------------------------------------------';
+        exit 1;
+    fi
+
     echo 'Installing certificates...';
     echo '-----------------------------------------------';
 
