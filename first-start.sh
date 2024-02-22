@@ -60,7 +60,7 @@ source plausible-conf.env;
 if [ -z "$SECRET_KEY_BASE" ]; then
     echo "Generating secret key...";
     SECRET_KEY_BASE=$(openssl rand -base64 64 | tr -d '\n' ; echo);
-    echo "SECRET_KEY_BASE=$SECRET_KEY_BASE" >> plausible-conf.env;
+    echo "SECRET_KEY_BASE=\"$SECRET_KEY_BASE\"" >> plausible-conf.env;
 fi
 
 # setup aws
