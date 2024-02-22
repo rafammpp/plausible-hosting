@@ -33,7 +33,7 @@ then
 fi
 
 # Prevent crons while the server is setting up
-mkdir crontab/locks;
+mkdir -p crontab/locks;
 touch crontab/locks/restore-db.lock;
 touch crontab/locks/archive.lock;
 touch crontab/locks/setting-up.lock;
