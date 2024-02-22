@@ -207,7 +207,7 @@ if [ "$lets_encrypt" = "y" ]; then
     }' > nginx-reverse-proxy/nginx.conf;
 else 
     echo '-----------------------------------------------';
-    echo "Skipping Let\'s Encrypt setup.";
+    echo "Skipping Let's Encrypt setup.";
     echo '-----------------------------------------------';
     echo "# Plausible reverse proxy, No SSL
     events {
