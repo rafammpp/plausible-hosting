@@ -7,7 +7,7 @@ if [ -z "$server_id" ] || [ -z "$CLOUDING_APIKEY" ]; then
     exit 1;
 fi
 
-current_disk_size=$(curl -s -X GET -H "Content-Type: application/json" -H "X-API-KEY: $CLOUDING_APIKEY" "https://api.clouding.io/v1/servers?page=1&pageSize=2" | \
+current_disk_size=$(curl -s -X GET -H "Content-Type: application/json" -H "X-API-KEY: $CLOUDING_APIKEY" "https://api.clouding.io/v1/servers/${server_id}" | \
 python3 -c "
 import sys, json
 data = json.load(sys.stdin)

@@ -59,8 +59,18 @@ else
     # get backup size before download
     bk_size=$(aws s3 ls s3://$R2_BUCKET/$RESTORE_FROM_SERVER_NAME/clickhouse/$last_clickhouse_bk --endpoint-url $R2_ENDPOINT --region auto | awk '{print $3}');
     bash /scripts/resize-disk.sh $bk_size;
-    
+    if [ $? -ne 0 ]; then
+        echo "Error resizing disk";
+        exit 1;
+    fi
+
     aws s3 cp s3://$R2_BUCKET/$RESTORE_FROM_SERVER_NAME/clickhouse/$last_clickhouse_bk /backup/clickhouse/$last_clickhouse_bk --only-show-errors --endpoint-url $R2_ENDPOINT --region auto;
+    # if the command exit status code is not 0, the script will exit with status 1
+    if [ $? -ne 0 ]; then
+        echo "Error downloading clickhouse backup";
+        exit 1;
+    fi
+
     # Restore clickhouse backup
     clickhouse-client -h plausible_events_db --query "DROP DATABASE plausible_events_db";
     clickhouse-client -h plausible_events_db --query "CREATE DATABASE plausible_events_db";

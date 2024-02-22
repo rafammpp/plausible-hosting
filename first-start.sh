@@ -33,6 +33,7 @@ then
 fi
 
 # Prevent restoring and archiving while the server is setting up
+mkdir crontab/locks;
 touch crontab/locks/restore-db.lock;
 touch crontab/locks/archive.lock;
 

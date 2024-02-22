@@ -26,7 +26,17 @@ if [ $current_disk_space -lt $needed_space ]; then
     fi
     space_to_add_GB=$(($1 * 4 / 1024 / 1024 / 1024));
     current_disk_size_GB=$(bash /scripts/get-server-current-size.sh $server_id);
+    if [ -z "$current_disk_size_GB" ]; then
+        echo "ERROR: Server disk size not found in clouding.io";
+        exit 1;
+    fi
+
     new_disk_size=$(($current_disk_size_GB + $space_to_add_GB));
+
+    # remove restore lock before resizing disk
+    if [ -f /locks/restore-db.lock ]; then
+        rm /locks/restore-db.lock;
+    fi
 
     curl -X POST -H "Content-Type: application/json" -H "X-API-KEY: $CLOUDING_APIKEY" -d "{\"volumeSizeGb\": \"$new_disk_size\"}" "https://api.clouding.io/v1/servers/$server_id/resize";
 fi
