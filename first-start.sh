@@ -1,7 +1,5 @@
 # Cleaning nginx and letsencrypt conf before start to avoid errors
 cd "$(dirname "$0")";
-rm -rf nginx-reverse-proxy;
-rm -rf crontab/letsencrypt;
 
 echo "-----------------------------------------------";
 echo "Welcome to the Plausible Analytics server setup!";
@@ -31,6 +29,10 @@ then
     sudo apt-get update
     sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
 fi
+
+# create backup folders, if they don't exist
+mkdir -p backup/clickhouse;
+mkdir -p backup/postgres;
 
 # Prevent crons while the server is setting up
 mkdir -p crontab/locks;
@@ -64,7 +66,7 @@ if [ -z "$SECRET_KEY_BASE" ]; then
     echo "SECRET_KEY_BASE=\"$SECRET_KEY_BASE\"" >> plausible-conf.env;
 fi
 
-if [ ! -f aws/config] || [ ! -f aws/credentials ]; then
+if [ ! -f crontab/aws/config] || [ ! -f crontab/aws/credentials ]; then
     # setup aws
     docker compose exec crontab bash -c "aws configure set aws_access_key_id ${R2_ACCESS_KEY_ID}";
     docker compose exec crontab bash -c "aws configure set aws_secret_access_key ${R2_SECRET_ACCESS_KEY}";
@@ -119,7 +121,16 @@ else
     read -a domains;
 fi
 
-echo "# Dummy config for certbot
+domain_args=""
+for domain in "${domains[@]}"; do
+  domain_args="$domain_args -d $domain"
+done
+
+echo '-----------------------------------------------';
+echo "Do you want to use Let's Encrypt to generate SSL certificates for your domains? (y/n)";
+read -n 1 -s lets_encrypt;
+if [ "$lets_encrypt" = "y" ]; then
+    echo "# Dummy config for certbot
 events {
     worker_connections 1024;
 }
@@ -136,21 +147,12 @@ http {
         }
     }
 }" > nginx-reverse-proxy/nginx.conf;
-docker compose down nginx && docker compose up -d nginx crontab;
+    docker compose down nginx && docker compose up -d nginx crontab;    
 
-domain_args=""
-for domain in "${domains[@]}"; do
-  domain_args="$domain_args -d $domain"
-done
-
-echo '-----------------------------------------------';
-echo "Do you want to use Let's Encrypt to generate SSL certificates for your domains? (y/n)";
-read -n 1 -s lets_encrypt;
-if [ "$lets_encrypt" = "y" ]; then
     echo '-----------------------------------------------';
     echo 'Now generating certificates for the domains you added.';
     echo '-----------------------------------------------';
-    echo 'Request test certificate...';
+    echo 'Requesting test certificate...';
     docker compose exec crontab bash -c "certbot certonly --test-cert --webroot -w /var/www/certbot \
         --email $LETS_ENCRYPT_EMAIL \
         $domain_args \

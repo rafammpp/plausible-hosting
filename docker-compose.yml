@@ -23,7 +23,7 @@ services:
       - ./clickhouse/clickhouse-user-config.xml:/etc/clickhouse-server/users.d/logging.xml:ro
       - ./clickhouse/local-backup.xml:/etc/clickhouse-server/config.d/local-backup.xml:ro
       - ./backup/clickhouse:/backup
-      - ./logs/clickhouse/:/var/log/clickhouse-server/
+      - ./logs/clickhouse:/var/log/clickhouse-server
 
     ulimits:
       nofile:
@@ -45,7 +45,7 @@ services:
     image: nginx:1.24.0-alpine
     restart: always
     volumes:
-      - ./nginx-reverse-proxy:/etc/nginx/
+      - ./nginx-reverse-proxy:/etc/nginx
       - ./crontab/letsencrypt/conf:/etc/letsencrypt
       - ./crontab/letsencrypt/www:/var/www/certbot
       - ./logs/nginx:/var/log/nginx
@@ -61,14 +61,14 @@ services:
     build: ./crontab
     restart: always
     volumes:
-      - ./backup/:/backup/
-      - ./nginx-reverse-proxy/:/etc/nginx/
-      - ./aws/:/root/.aws/
-      - ./crontab/letsencrypt/conf/:/etc/letsencrypt/
+      - ./backup:/backup/
+      - ./nginx-reverse-proxy:/etc/nginx
+      - ./crontab/aws:/root/.aws
+      - ./crontab/letsencrypt/conf:/etc/letsencrypt
       - ./crontab/letsencrypt/www:/var/www/certbot
-      - ./logs/:/logs/
-      - ./crontab/last_bks/:/last_bks/
-      - ./crontab/locks/:/locks/
+      - ./logs:/logs
+      - ./crontab/last_bks:/last_bks
+      - ./crontab/locks:/locks
     depends_on:
       - nginx
       - plausible_db

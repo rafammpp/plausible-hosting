@@ -1,11 +1,6 @@
 backup/
 *.env
 *.mmdb
-geonames.csv
 plausible-backups/
-aws/
-nginx-reverse-proxy
-crontab/letsencrypt
-crontab/last_bks
-logs/
+nginx-reverse-proxy/nginx.conf
 *.log
