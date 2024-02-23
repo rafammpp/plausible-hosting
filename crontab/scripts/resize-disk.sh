@@ -33,8 +33,10 @@ if [ $current_disk_space -lt $needed_space ]; then
 
     new_disk_size=$(($current_disk_size_GB + $space_to_add_GB));
 
-    # convert to int
-    new_disk_size=${new_disk_size%.*};
+    # convert to integer and then to the nearest multiple of 5
+    new_disk_size=$(echo $new_disk_size | awk '{print int($1+0.5)}');
+    new_disk_size=$((($new_disk_size + 2 )/ 5 * 5));
+
 
     # remove restore lock before resizing disk
     if [ -f /locks/restore-db.lock ]; then
