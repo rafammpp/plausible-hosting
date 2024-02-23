@@ -66,7 +66,7 @@ if [ -z "$SECRET_KEY_BASE" ]; then
     echo "SECRET_KEY_BASE=\"$SECRET_KEY_BASE\"" >> plausible-conf.env;
 fi
 
-if [ ! -f crontab/aws/config] || [ ! -f crontab/aws/credentials ]; then
+if [ ! -f crontab/aws/config ] || [ ! -f crontab/aws/credentials ]; then
     # setup aws
     docker compose exec crontab bash -c "aws configure set aws_access_key_id ${R2_ACCESS_KEY_ID}";
     docker compose exec crontab bash -c "aws configure set aws_secret_access_key ${R2_SECRET_ACCESS_KEY}";
