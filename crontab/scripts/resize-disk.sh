@@ -33,10 +33,13 @@ if [ $current_disk_space -lt $needed_space ]; then
 
     new_disk_size=$(($current_disk_size_GB + $space_to_add_GB));
 
+    # convert to int
+    new_disk_size=${new_disk_size%.*};
+
     # remove restore lock before resizing disk
     if [ -f /locks/restore-db.lock ]; then
         rm /locks/restore-db.lock;
     fi
-
+    echo "Resizing disk to $new_disk_size GB";
     curl -X POST -H "Content-Type: application/json" -H "X-API-KEY: $CLOUDING_APIKEY" -d "{\"volumeSizeGb\": \"$new_disk_size\"}" "https://api.clouding.io/v1/servers/$server_id/resize";
 fi
