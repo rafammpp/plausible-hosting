@@ -2,13 +2,13 @@
 Based on https://github.com/plausible/hosting
 
 This repository allows you to get up and running with [Plausible Analytics](https://github.com/plausible/analytics). It configures a reverse proxy with SSL using Let's Encrypt and sets up a crontab service for automatic backups to Cloudflare R2.
-In addition, it includes several scripts to restore backups of both databases from Cloudflare R2.
 
 ## First install
 If you are not using Ubuntu, install docker engine: https://docs.docker.com/engine/install/. Otherwise, the script will do it for you.
 
 Clone this repository to the server and navigate to the directory.
-```
+
+```bash
 git clone https://github.com/opusdeits/plausible-hosting.git;
 cd plausible-hosting;
 ```
@@ -21,7 +21,7 @@ An important var is `FOLLOWER`. If it is set to true, this will make this server
 
 Check the configuration examples at the end of this file for more details.
 
-```
+```bash
 # plausible-conf.env
 
 # Plausible settings 
@@ -83,7 +83,8 @@ For local testing, the minimal configuration is enough. For a production server,
 
 ### Minimal configuration, a single server with no backups or restore and no Let's Encrypt SSL
 You can skip the first-start.sh script. The only thing you need is a `SECRET_KEY_BASE` and the other plausible vars, and a nginx.conf file. There is a configuration example here: `nginx-reverse-proxy/nginx.conf.example`. You can rename it to `nginx.conf`, replacing `localhost` with your domain and it will work.
-```
+
+```bash
 # plausible settings
 ...
 
@@ -96,7 +97,7 @@ If you don't need SSL or you already have it configured, you can disable it on t
 
 The crontab table used is in this repository, at `crontab/table/cron`. 
 
-```
+```bash
 # plausible settings
 ...
 
@@ -118,7 +119,8 @@ We have two roles, leader and follower. The leader receives the pageview events 
 
 #### Leader
 The leader is configured as a single server plus some one more var, `FOLLOWER_TO_WAKEUP`. This is the ip of the follower server. The leader will wake up the follower after a backup for the follower to restore from the leader's backups.
-```
+
+```bash
 # plausible settings
 ...
 LETS_ENCRYPT_EMAIL=your_email@email.com
@@ -137,8 +139,9 @@ FOLLOWER_TO_WAKEUP=  # the ip of the follower server
 ```
 
 #### Follower
-The follower will try to restore from the leader's backups on wake up if needed. It will also resize the disk before restoring if needed.  
-```
+The follower will try to restore from the leader's backups on wake up if needed. It will also resize the disk before restoring if needed.
+
+```bash
 # plausible settings
 ...
 LETS_ENCRYPT_EMAIL=your_email@email.com
@@ -155,8 +158,9 @@ FOLLOWER=true
 CLOUDING_APIKEY=your_clouding_api_key
 AUTO_RESIZE_DISK=true # if set to true, the server will resize the disk before restoring if needed.
 ```
+
 ### How to wake up the follower
-You have three options: use the clouding.io admin panel, use the [clouding api](https://api.clouding.io/docs) or, if you use django, check out my other repository [clouding-wake-up](https://github.com/rafammpp/django-clouding-unarchive). It's a simple django app that wakes up a server when press a button. It's useful if you have a django website and want to wake up the follower from there.
+You have three options: use the clouding.io admin panel, use the [clouding api](https://api.clouding.io/docs) or, if you use django, check out my other repository [clouding-wake-up](https://github.com/rafammpp/django-clouding-unarchive). It's a simple django app that wakes up a server when you press a button. It's useful if you have a django website and want to wake up the follower from it's admin.
 
 ### About Clouding.io
 Clouding.io is a simple cloud provider that allows you to choose the amount of CPU, RAM and disk space you need. You can resize it later, has persistent data storage and can be archived to save a lot of money. It's a good option for a follower server. It's also a good option for a leader server, but you will need to pay for the whole month, so a VPS is a cheaper option most of the time.
@@ -164,22 +168,35 @@ Clouding.io is a simple cloud provider that allows you to choose the amount of C
 You can use another cloud provider, but you will need to fork this repository and change the wake up call at `crontab/scripts/cron-backup.sh` and the sleep call at `crontab/scripts/cron-archive.sh` to use the other provider's api.
 
 ## Useful commands
-### Manual backup databases and upload to R2
-This requires you to have configured R2 vars in plausible-conf.env
+### Make a manual backup of databases and upload it to R2
+This requires you to have configured R2 vars in `plausible-conf.env`. Optionally, you can pass the R2 folder name as the first positinal argument, if not, it will use the current `BACKUP_TO_SERVER_NAME` value.
+
 From this folder run this:
+
 ```bash
 docker compose exec crontab bash -c "/scripts/backup-db.sh"
+```
+or
+```bash
+docker compose exec crontab bash -c "/scripts/backup-db.sh your_folder_name"
 ```
 
 ### Restore last backup from R2
 ***WARNING!!!! This will destroy all current data and cannot be undone.***
 
-This will download the last backup of both databases, **drop the existing tables** and then restore.
+This will download the last backup of both databases, **drop the existing tables** and then restore. Optionally, you can pass the R2 folder name as the first positinal argument, if not, it will use the current `RESTORE_FROM_SERVER_NAME` value.
+
 ```bash
 docker compose exec crontab bash -c "/scripts/restore-db.sh"
 ```
+or
+```bash
+docker compose exec crontab bash -c "/scripts/restore-db.sh your_folder_name"
+```
+
 ### Increase the API keys request limit
 API keys have a default limit of 600 requests per hour. If you want to change it to the maximum value, do the following:
+
 ```bash
 docker compose exec plausible_db psql -U postgres -d plausible_db -c 'UPDATE api_keys SET hourly_request_limit = 2147483647'
 ```
