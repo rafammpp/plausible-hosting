@@ -11,6 +11,11 @@ if [ -z "$R2_ENDPOINT" ]; then
     exit 1;
 fi
 
+# first positional parameter is optional and can be the R2 folder name
+if [ -n "$1" ]; then
+    export BACKUP_TO_SERVER_NAME=$1;
+fi
+
 if [ -z "$BACKUP_TO_SERVER_NAME" ]; then
     echo "BACKUP_TO_SERVER_NAME is not set";
     exit 1;

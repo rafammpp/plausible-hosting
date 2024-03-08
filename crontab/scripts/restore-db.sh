@@ -22,6 +22,11 @@ source /run/secrets/plausible-conf;
 export PGUSER=postgres
 export PGPASSWORD=postgres
 
+# first positional parameter is optional and can be the R2 folder name
+if [ -n "$1" ]; then
+    export RESTORE_FROM_SERVER_NAME=$1;
+fi
+
 # check if RESTORE_FROM_SERVER_NAME is set
 if [ -z "$RESTORE_FROM_SERVER_NAME" ]; then
     echo "RESTORE_FROM_SERVER_NAME is not set";
