@@ -6,7 +6,7 @@ if [ -f /locks/archive.lock ]; then
     exit 0;
 fi
 
-last_query=$(tail -n 100 /logs/nginx/access.log | grep /api/stats/ | grep = | grep 200 | tail -n 1 |  grep -o -E "\[.+\]" | sed 's/[][]//g' | sed 's/\//-/g' | sed 's/:/ /' | sed 's/ +0000//');
+last_query=$(cat /logs/nginx/access.log | grep -v /current-visitors | grep /api/stats/ | grep = | grep 200 | tail -n 1 |  grep -o -E "\[.+\]" | sed 's/[][]//g' | sed 's/\//-/g' | sed 's/:/ /' | sed 's/ +0000//');
 
 
 # check if the last query is empty
