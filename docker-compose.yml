@@ -1,4 +1,3 @@
-version: "3.3"
 services:
   mail:
     image: bytemark/smtp
@@ -49,6 +48,7 @@ services:
       - ./crontab/letsencrypt/conf:/etc/letsencrypt
       - ./crontab/letsencrypt/www:/var/www/certbot
       - ./logs/nginx:/var/log/nginx
+    entrypoint: /bin/sh -c 'while true; do sleep 1d; nginx -s reload >> /var/log/nginx/test-while.log; done & exec nginx -g "daemon off;"'
     ports:
       - 80:80
       - 443:443
