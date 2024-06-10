@@ -60,7 +60,9 @@ if [[ $last_postgres_bk == $restored_postgres_bk ]]; then
 else
     aws s3 cp s3://$R2_BUCKET/$RESTORE_FROM_SERVER_NAME/postgres/$last_postgres_bk /backup/postgres/$last_postgres_bk --only-show-errors --endpoint-url $R2_ENDPOINT --region auto;
     # Restore postgres backup
-    pg_restore -h plausible_db -d plausible_db --clean /backup/postgres/$last_postgres_bk;
+    dropdb -h plausible_db plausible_db;
+    createdb -h plausible_db plausible_db;
+    pg_restore -h plausible_db -d plausible_db /backup/postgres/$last_postgres_bk;
 fi
 
 

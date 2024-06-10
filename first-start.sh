@@ -63,7 +63,18 @@ source plausible-conf.env;
 if [ -z "$SECRET_KEY_BASE" ]; then
     echo "Generating secret key...";
     SECRET_KEY_BASE=$(openssl rand -base64 64 | tr -d '\n' ; echo);
-    echo "SECRET_KEY_BASE=\"$SECRET_KEY_BASE\"" >> plausible-conf.env;
+    echo "
+SECRET_KEY_BASE=\"$SECRET_KEY_BASE\"
+" >> plausible-conf.env;
+fi
+
+# Generate TOTP_VAULT_KEY if not set
+if [ -z "$TOTP_VAULT_KEY" ]; then
+    echo "Generating TOTP_VAULT_KEY...";
+    TOTP_VAULT_KEY=$(openssl rand -base64 32 | tr -d '\n' ; echo);
+    echo "
+TOTP_VAULT_KEY=\"$TOTP_VAULT_KEY\"
+" >> plausible-conf.env;
 fi
 
 if [ ! -f crontab/aws/config ] || [ ! -f crontab/aws/credentials ]; then
@@ -106,164 +117,171 @@ else
     echo "AWS CLI already configured.";
 fi
 
-echo "Waiting for nginx folder to be created";
-# wait until folder nginx-reverse-proxy is created
-while [ ! -d "nginx-reverse-proxy" ]; do
-    sleep 1;
-done
-
-# Check if DOMAINS var exists
-if [ -n "$DOMAINS" ]; then
-    domains=($DOMAINS);
-    echo "Using domains from plausible-conf.env file: ${domains[@]}";
+# check if nginx.conf exists
+if [ -f 'nginx-reverse-proxy/nginx.conf' ]; then
+    echo "-----------------------------------------------";
+    echo "WARNING: nginx-reverse-proxy/nginx.conf already exists. Skipping Let's Encrypt setup.";
+    echo "If you want to generate new certificates, delete nginx.conf file inside nginx-reverse-proxy folder and run this script again.";
+    echo "-----------------------------------------------";
 else
-    echo "Type any domains you want to add to the plausible server, separated by a space";
-    read -a domains;
-fi
+    echo "Waiting for nginx folder to be created";
+    # wait until folder nginx-reverse-proxy is created
+    while [ ! -d "nginx-reverse-proxy" ]; do
+        sleep 1;
+    done
 
-domain_args=""
-for domain in "${domains[@]}"; do
-  domain_args="$domain_args -d $domain"
-done
-
-echo '-----------------------------------------------';
-echo "Do you want to use Let's Encrypt to generate SSL certificates for your domains? (y/n)";
-read -n 1 -s lets_encrypt;
-if [ "$lets_encrypt" = "y" ]; then
-    echo "# Dummy config for certbot
-events {
-    worker_connections 1024;
-}
-
-http {
-    server {
-        server_name ${domains[@]};
-        
-        listen 80;
-        listen [::]:80;
-
-        location /.well-known/acme-challenge/ {
-            root /var/www/certbot;
-        }
-    }
-}" > nginx-reverse-proxy/nginx.conf;
-    docker compose down nginx && docker compose up -d nginx crontab;    
-
-    echo '-----------------------------------------------';
-    echo 'Now generating certificates for the domains you added.';
-    echo '-----------------------------------------------';
-    echo 'Requesting test certificate...';
-    docker compose exec crontab bash -c "certbot certonly --test-cert --webroot -w /var/www/certbot \
-        --email $LETS_ENCRYPT_EMAIL \
-        $domain_args \
-        --non-interactive \
-        --cert-name plausible \
-        --agree-tos \
-        --force-renewal";
-    
-    if [ $? -ne 0 ]; then
-        echo '-----------------------------------------------';
-        echo "ERROR: Certbot test failed. Check if the domains are pointing to this server and try again.";
-        echo '-----------------------------------------------';
-        exit 1;
+    # Check if DOMAINS var exists
+    if [ -n "$DOMAINS" ]; then
+        domains=($DOMAINS);
+        echo "Using domains from plausible-conf.env file: ${domains[@]}";
+    else
+        echo "Type any domains you want to add to the plausible server, separated by a space";
+        read -a domains;
     fi
 
-    docker compose exec crontab bash -c "certbot certonly --webroot -w /var/www/certbot \
-        --email $LETS_ENCRYPT_EMAIL \
-        $domain_args \
-        --non-interactive \
-        --cert-name plausible \
-        --agree-tos \
-        --force-renewal";
+    domain_args=""
+    for domain in "${domains[@]}"; do
+    domain_args="$domain_args -d $domain"
+    done
 
-    if [ $? -ne 0 ]; then
-        echo '-----------------------------------------------';
-        echo "ERROR: Certbot command failed. Check if the domains are pointing to this server and try again.";
-        echo '-----------------------------------------------';
-        exit 1;
-    fi
-
-    echo 'Installing certificates...';
     echo '-----------------------------------------------';
-
-
-    # Watch out for $, we need the value of var domains but not $proxy_add_x_forwarded_for, so we use a mix of ' and " to avoid it
-    echo "# Plausible reverse proxy
+    echo "Do you want to use Let's Encrypt to generate SSL certificates for your domains? (y/n)";
+    read -n 1 -s lets_encrypt;
+    if [ "$lets_encrypt" = "y" ]; then
+        echo "# Dummy config for certbot
     events {
         worker_connections 1024;
     }
 
     http {
         server {
-            server_name ${domains[@]};"'
+            server_name ${domains[@]};
             
             listen 80;
             listen [::]:80;
-
-            location /robots.txt {
-                add_header Content-Type text/plain;
-                return 200 "User-agent: *\nDisallow: /\n";
-            }
-
-            location / {
-                proxy_pass http://plausible:8000;
-                proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-            }
 
             location /.well-known/acme-challenge/ {
                 root /var/www/certbot;
             }
-        }'"
+        }
+    }" > nginx-reverse-proxy/nginx.conf;
+        docker compose down nginx && docker compose up -d nginx crontab;    
+
+        echo '-----------------------------------------------';
+        echo 'Now generating certificates for the domains you added.';
+        echo '-----------------------------------------------';
+        echo 'Requesting test certificate...';
+        docker compose exec crontab bash -c "certbot certonly --test-cert --webroot -w /var/www/certbot \
+            --email $LETS_ENCRYPT_EMAIL \
+            $domain_args \
+            --non-interactive \
+            --cert-name plausible \
+            --agree-tos \
+            --force-renewal";
         
-        server {
-            server_name ${domains[@]};"'
+        if [ $? -ne 0 ]; then
+            echo '-----------------------------------------------';
+            echo "ERROR: Certbot test failed. Check if the domains are pointing to this server and try again.";
+            echo '-----------------------------------------------';
+            exit 1;
+        fi
 
-            listen 443 ssl;
-            listen [::]:443 ssl;
+        docker compose exec crontab bash -c "certbot certonly --webroot -w /var/www/certbot \
+            --email $LETS_ENCRYPT_EMAIL \
+            $domain_args \
+            --non-interactive \
+            --cert-name plausible \
+            --agree-tos \
+            --force-renewal";
 
-            ssl_certificate /etc/letsencrypt/live/plausible/fullchain.pem;
-            ssl_certificate_key /etc/letsencrypt/live/plausible/privkey.pem;
+        if [ $? -ne 0 ]; then
+            echo '-----------------------------------------------';
+            echo "ERROR: Certbot command failed. Check if the domains are pointing to this server and try again.";
+            echo '-----------------------------------------------';
+            exit 1;
+        fi
 
-            location /robots.txt {
-                add_header Content-Type text/plain;
-                return 200 "User-agent: *\nDisallow: /\n";
-            }
+        echo 'Installing certificates...';
+        echo '-----------------------------------------------';
 
-            location / {
-                proxy_pass http://plausible:8000;
-                proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-            }
+
+        # Watch out for $, we need the value of var domains but not $proxy_add_x_forwarded_for, so we use a mix of ' and " to avoid it
+        echo "# Plausible reverse proxy
+        events {
+            worker_connections 1024;
         }
-    }' > nginx-reverse-proxy/nginx.conf;
-else 
-    echo '-----------------------------------------------';
-    echo "Skipping Let's Encrypt setup.";
-    echo '-----------------------------------------------';
-    echo "# Plausible reverse proxy, No SSL
-    events {
-        worker_connections 1024;
-    }
 
-    http {
-        server {
-            server_name ${domains[@]};"'
+        http {
+            server {
+                server_name ${domains[@]};"'
+                
+                listen 80;
+                listen [::]:80;
+
+                location /robots.txt {
+                    add_header Content-Type text/plain;
+                    return 200 "User-agent: *\nDisallow: /\n";
+                }
+
+                location / {
+                    proxy_pass http://plausible:8000;
+                    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+                }
+
+                location /.well-known/acme-challenge/ {
+                    root /var/www/certbot;
+                }
+            }'"
             
-            listen 80;
-            listen [::]:80;
+            server {
+                server_name ${domains[@]};"'
 
-            location /robots.txt {
-                add_header Content-Type text/plain;
-                return 200 "User-agent: *\nDisallow: /\n";
-            }
+                listen 443 ssl;
+                listen [::]:443 ssl;
 
-            location / {
-                proxy_pass http://plausible:8000;
-                proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+                ssl_certificate /etc/letsencrypt/live/plausible/fullchain.pem;
+                ssl_certificate_key /etc/letsencrypt/live/plausible/privkey.pem;
+
+                location /robots.txt {
+                    add_header Content-Type text/plain;
+                    return 200 "User-agent: *\nDisallow: /\n";
+                }
+
+                location / {
+                    proxy_pass http://plausible:8000;
+                    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+                }
             }
+        }' > nginx-reverse-proxy/nginx.conf;
+    else 
+        echo '-----------------------------------------------';
+        echo "Skipping Let's Encrypt setup.";
+        echo '-----------------------------------------------';
+        echo "# Plausible reverse proxy, No SSL
+        events {
+            worker_connections 1024;
         }
-    }' > nginx-reverse-proxy/nginx.conf;
-fi
 
+        http {
+            server {
+                server_name ${domains[@]};"'
+                
+                listen 80;
+                listen [::]:80;
+
+                location /robots.txt {
+                    add_header Content-Type text/plain;
+                    return 200 "User-agent: *\nDisallow: /\n";
+                }
+
+                location / {
+                    proxy_pass http://plausible:8000;
+                    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+                }
+            }
+        }' > nginx-reverse-proxy/nginx.conf;
+    fi
+fi
 
 echo 'Reloading services...';
 docker compose down && docker compose up -d;
