@@ -226,6 +226,13 @@ else
                 location / {
                     proxy_pass http://plausible:8000;
                     proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+
+                    location = /live/websocket {
+                        proxy_pass http://plausible:8000;
+                        proxy_http_version 1.1;
+                        proxy_set_header Upgrade $http_upgrade;
+                        proxy_set_header Connection "Upgrade";
+                    }
                 }
 
                 location /.well-known/acme-challenge/ {
@@ -250,6 +257,13 @@ else
                 location / {
                     proxy_pass http://plausible:8000;
                     proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+
+                    location = /live/websocket {
+                        proxy_pass http://plausible:8000;
+                        proxy_http_version 1.1;
+                        proxy_set_header Upgrade $http_upgrade;
+                        proxy_set_header Connection "Upgrade";
+                    }
                 }
             }
         }' > nginx-reverse-proxy/nginx.conf;
@@ -277,6 +291,13 @@ else
                 location / {
                     proxy_pass http://plausible:8000;
                     proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+
+                    location = /live/websocket {
+                        proxy_pass http://plausible:8000;
+                        proxy_http_version 1.1;
+                        proxy_set_header Upgrade $http_upgrade;
+                        proxy_set_header Connection "Upgrade";
+                    }
                 }
             }
         }' > nginx-reverse-proxy/nginx.conf;
