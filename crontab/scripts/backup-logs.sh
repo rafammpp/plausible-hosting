@@ -3,7 +3,7 @@ source /run/secrets/plausible-conf;
 
 # Upload logs to R2 and reset log files
 cp -f -r  /logs /backup/logs;
-find /logs -type f -exec sh -c '>"{}"' \;
+find /logs -type f ! -name '.gitignore' -exec sh -c '>"{}"' \;
 
 # backup cron logs and reset them
 mv /var/log/cron.log /backup/logs/cron-$(date +%Y-%m-%d-%H%M%S).log;
