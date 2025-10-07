@@ -9,6 +9,11 @@ services:
       - ./clickhouse/local-backup.xml:/etc/clickhouse-server/config.d/local-backup.xml:ro
       - ./backup/clickhouse:/backup
 
+  plausible:
+    ports:
+      - 80:80
+      - 443:443
+
   crontab:
     build: ./crontab
     restart: always
