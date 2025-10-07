@@ -1,7 +1,7 @@
-FROM clickhouse/clickhouse-server:24.1-alpine
+FROM clickhouse/clickhouse-server:24.12-alpine
 
 RUN apk update
-RUN apk add --no-cache --update curl coreutils postgresql-client aws-cli nginx certbot certbot-nginx 
+RUN apk add --no-cache --update curl coreutils postgresql-client aws-cli
 
 # Copy cron file to the container
 COPY ./table/cron /etc/cron.d/cron
