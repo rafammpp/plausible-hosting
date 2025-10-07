@@ -47,7 +47,7 @@ if [ ! -f 'plausible-conf.env' ]; then
     exit 1;
 fi
 
-docker compose up -d;
+sudo docker compose up -d;
 
 # check compose up exit code
 if [ $? -ne 0 ]; then
@@ -79,23 +79,23 @@ fi
 
 if [ ! -f crontab/aws/config ] || [ ! -f crontab/aws/credentials ]; then
     # setup aws
-    docker compose exec crontab bash -c "aws configure set aws_access_key_id ${R2_ACCESS_KEY_ID}";
-    docker compose exec crontab bash -c "aws configure set aws_secret_access_key ${R2_SECRET_ACCESS_KEY}";
-    docker compose exec crontab bash -c "aws configure set aws_default_region auto";
-    docker compose exec crontab bash -c "aws configure set output json";
+    sudo docker compose exec crontab bash -c "aws configure set aws_access_key_id ${R2_ACCESS_KEY_ID}";
+    sudo docker compose exec crontab bash -c "aws configure set aws_secret_access_key ${R2_SECRET_ACCESS_KEY}";
+    sudo docker compose exec crontab bash -c "aws configure set aws_default_region auto";
+    sudo docker compose exec crontab bash -c "aws configure set output json";
 
     # test aws cli
     echo "-----------------------------------------------";
     echo "Listing bucket for testing aws configuration...";
-    docker compose exec crontab bash -c "aws s3 ls s3://$R2_BUCKET/ --endpoint-url $R2_ENDPOINT --region auto";
+    sudo docker compose exec crontab bash -c "aws s3 ls s3://$R2_BUCKET/ --endpoint-url $R2_ENDPOINT --region auto";
 
     # try to upload a test file to the bucket and check if it's there. If not, exit.
     echo "-----------------------------------------------";
     echo "Testing backup upload...";
-    docker compose exec crontab bash -c "echo 'test' > /backup/test.txt";
-    docker compose exec crontab bash -c "aws s3 cp /backup/test.txt s3://$R2_BUCKET/ --endpoint-url $R2_ENDPOINT --region auto";
-    docker compose exec crontab bash -c "rm /backup/test.txt";
-    docker compose exec crontab bash -c "aws s3 cp s3://$R2_BUCKET/test.txt /backup/test.txt --endpoint-url $R2_ENDPOINT --region auto";
+    sudo docker compose exec crontab bash -c "echo 'test' > /backup/test.txt";
+    sudo docker compose exec crontab bash -c "aws s3 cp /backup/test.txt s3://$R2_BUCKET/ --endpoint-url $R2_ENDPOINT --region auto";
+    sudo docker compose exec crontab bash -c "rm /backup/test.txt";
+    sudo docker compose exec crontab bash -c "aws s3 cp s3://$R2_BUCKET/test.txt /backup/test.txt --endpoint-url $R2_ENDPOINT --region auto";
     # check if the file is there
     if [ ! -f 'backup/test.txt' ]; then
         echo "-----------------------------------------------";
@@ -103,13 +103,13 @@ if [ ! -f crontab/aws/config ] || [ ! -f crontab/aws/credentials ]; then
         echo "You can generate access_key_id and access_key_secret following this guide https://developers.cloudflare.com/r2/api/s3/tokens/";
         echo "Ensure the bucket exists and the credentials have read/write access to it.";
         echo "-----------------------------------------------";
-        rm backup/test.txt;
-        docker compose exec crontab bash -c "aws s3 rm s3://$R2_BUCKET/test.txt --endpoint-url $R2_ENDPOINT --region auto";
-        docker compose down;
+        rm -f backup/test.txt;
+        sudo docker compose exec crontab bash -c "aws s3 rm s3://$R2_BUCKET/test.txt --endpoint-url $R2_ENDPOINT --region auto";
+        sudo docker compose down;
         exit 1;
     fi
-    rm backup/test.txt;
-    docker compose exec crontab bash -c "aws s3 rm s3://$R2_BUCKET/test.txt --endpoint-url $R2_ENDPOINT --region auto";
+    rm -f backup/test.txt;
+    sudo docker compose exec crontab bash -c "aws s3 rm s3://$R2_BUCKET/test.txt --endpoint-url $R2_ENDPOINT --region auto";
 
     echo "All good!";
     echo "-----------------------------------------------";
@@ -165,13 +165,13 @@ else
             }
         }
     }" > nginx-reverse-proxy/nginx.conf;
-        docker compose down nginx && docker compose up -d nginx crontab;    
+        sudo docker compose down nginx && sudo docker compose up -d nginx crontab;    
 
         echo '-----------------------------------------------';
         echo 'Now generating certificates for the domains you added.';
         echo '-----------------------------------------------';
         echo 'Requesting test certificate...';
-        docker compose exec crontab bash -c "certbot certonly --test-cert --webroot -w /var/www/certbot \
+        sudo docker compose exec crontab bash -c "certbot certonly --test-cert --webroot -w /var/www/certbot \
             --email $LETS_ENCRYPT_EMAIL \
             $domain_args \
             --non-interactive \
@@ -186,7 +186,7 @@ else
             exit 1;
         fi
 
-        docker compose exec crontab bash -c "certbot certonly --webroot -w /var/www/certbot \
+        sudo docker compose exec crontab bash -c "certbot certonly --webroot -w /var/www/certbot \
             --email $LETS_ENCRYPT_EMAIL \
             $domain_args \
             --non-interactive \
@@ -305,11 +305,11 @@ else
 fi
 
 echo 'Reloading services...';
-docker compose down && docker compose up -d;
+sudo docker compose down && sudo docker compose up -d;
 echo 'Done!';
 echo '-----------------------------------------------';
 echo "To restore a backup, run the following command:";
-echo "docker compose exec crontab /scripts/restore-db.sh";
+echo "sudo docker compose exec crontab /scripts/restore-db.sh";
 
 
 # Remove locks to allow restoring and archiving
