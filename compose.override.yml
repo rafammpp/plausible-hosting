@@ -6,6 +6,7 @@ services:
 
   plausible_events_db:
     volumes:
+      - ./clickhouse/empty.xml:/etc/clickhouse-server/config.d/low-resources.xml:ro # override low-resources.xml to disable it
       - ./clickhouse/local-backup.xml:/etc/clickhouse-server/config.d/local-backup.xml:ro
       - ./backup/clickhouse:/backup
 
@@ -15,6 +16,10 @@ services:
       - 443:443
     environment:
       - LOG_LEVEL=info
+      - CLICKHOUSE_DATABASE_URL=http://plausible_events_db:8123/plausible_events_db?timeout=120000
+    volumes:
+      - ./logs:/logs/
+    command: sh -c "/entrypoint.sh db createdb && /entrypoint.sh db migrate && /entrypoint.sh run >> /logs/plausible.log 2>&1"
 
   crontab:
     build: ./crontab
@@ -32,12 +37,6 @@ services:
         condition: service_healthy
     secrets:
       - plausible-conf
-
-volumes:
-  db-data:
-    driver: local
-  event-data:
-    driver: local
 
 secrets:
   plausible-conf:
