@@ -41,12 +41,7 @@ services:
       - ./crontab/last_bks:/last_bks
       - ./crontab/locks:/locks
     depends_on:
-      plausible_db:
-        condition: service_healthy
-      plausible_events_db:
-        condition: service_healthy
-      change-vol-permissions:
-        condition: service_completed_successfully
+      - plausible
     secrets:
       - plausible-conf
 
