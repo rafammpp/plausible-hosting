@@ -33,6 +33,7 @@ services:
 
   crontab:
     build: ./crontab
+    stop_signal: SIGKILL
     restart: always
     volumes:
       - ./backup:/backup/
