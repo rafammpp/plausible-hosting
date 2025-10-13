@@ -1,0 +1,54 @@
+services:
+  plausible_db:
+    volumes:
+      - ./backup/postgres:/backup
+      - ./logs/postgres:/var/log/postgresql
+
+  plausible_events_db:
+    volumes:
+      - ./clickhouse/empty.xml:/etc/clickhouse-server/config.d/low-resources.xml:ro # override low-resources.xml to disable it
+      - ./clickhouse/local-backup.xml:/etc/clickhouse-server/config.d/local-backup.xml:ro
+      - ./backup/clickhouse:/backup
+
+  change-vol-permissions:
+    image: alpine:latest
+    user: root
+    volumes:
+      - logs:/logs/
+    command: sh -c "chmod -R 777 /logs/"
+
+  plausible:
+    ports:
+      - 80:80
+      - 443:443
+    environment:
+      - LOG_LEVEL=info
+      - CLICKHOUSE_DATABASE_URL=http://plausible_events_db:8123/plausible_events_db?timeout=120000
+    volumes:
+      - logs:/logs/
+    command: sh -c "/entrypoint.sh db createdb && /entrypoint.sh db migrate && /entrypoint.sh run >> /logs/plausible.log 2>&1"
+    depends_on:
+      change-vol-permissions:
+        condition: service_completed_successfully
+
+  crontab:
+    build: ./crontab
+    stop_signal: SIGKILL
+    restart: always
+    volumes:
+      - ./backup:/backup/
+      - ./crontab/aws:/root/.aws
+      - logs:/logs
+      - ./crontab/last_bks:/last_bks
+      - ./crontab/locks:/locks
+    depends_on:
+      - plausible
+    secrets:
+      - plausible-conf
+
+volumes:
+  logs:
+
+secrets:
+  plausible-conf:
+    file: ./.env

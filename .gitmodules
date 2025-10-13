@@ -1,0 +1,3 @@
+[submodule "community-edition"]
+	path = community-edition
+	url = git@github.com:plausible/community-edition.git
