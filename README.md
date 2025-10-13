@@ -9,7 +9,7 @@ If you are not using Ubuntu, install Docker Engine: https://docs.docker.com/engi
 Clone this repository to the server and navigate to the directory.
 
 ```bash
-git clone --recurse-submodules https://github.com/opusdeits/plausible-hosting.git;
+git clone --recurse-submodules https://github.com/rafammpp/plausible-hosting.git;
 cd plausible-hosting;
 ```
 
