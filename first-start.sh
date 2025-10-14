@@ -5,7 +5,7 @@ echo "-----------------------------------------------";
 echo "Welcome to the Plausible Analytics server setup!";
 echo "-----------------------------------------------";
 echo "This script will guide you through the setup process.";
-echo "Make sure you have setup domain DNS records to point to this server and fill the variables in plausible-conf.env before continuing. You can find more info about this in the README file.";
+echo "Make sure you have setup domain DNS records to point to this server and fill the variables in .env before continuing. You can find more info about this in the README file.";
 echo "Press any key when you are ready to continue or CTRL+C to exit.";
 echo "-----------------------------------------------";
 read -n 1 -s;
@@ -40,9 +40,9 @@ touch crontab/locks/restore-db.lock;
 touch crontab/locks/archive.lock;
 touch crontab/locks/setting-up.lock;
 
-if [ ! -f 'plausible-conf.env' ]; then
+if [ ! -f '.env' ]; then
     echo "-----------------------------------------------";
-    echo "ERROR: plausible-conf.env file not found. Please create it and try again.";
+    echo "ERROR: .env file not found. Please create it and try again.";
     echo "-----------------------------------------------";
     exit 1;
 fi
@@ -57,7 +57,7 @@ if [ $? -ne 0 ]; then
     exit 1;
 fi
 
-source plausible-conf.env;
+source .env;
 
 # Generate a secret key with openssl if not set
 if [ -z "$SECRET_KEY_BASE" ]; then
@@ -65,7 +65,7 @@ if [ -z "$SECRET_KEY_BASE" ]; then
     SECRET_KEY_BASE=$(openssl rand -base64 64 | tr -d '\n' ; echo);
     echo "
 SECRET_KEY_BASE=\"$SECRET_KEY_BASE\"
-" >> plausible-conf.env;
+" >> .env;
 fi
 
 
@@ -91,7 +91,7 @@ if [ ! -f crontab/aws/config ] || [ ! -f crontab/aws/credentials ]; then
     # check if the file is there
     if [ ! -f 'backup/test.txt' ]; then
         echo "-----------------------------------------------";
-        echo "ERROR: Read/Write test failed. Set valid values for R2_BUCKET, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY R2_ENDPOINT vars in plausible-conf.env and try again.";
+        echo "ERROR: Read/Write test failed. Set valid values for R2_BUCKET, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY R2_ENDPOINT vars in .env and try again.";
         echo "You can generate access_key_id and access_key_secret following this guide https://developers.cloudflare.com/r2/api/s3/tokens/";
         echo "Ensure the bucket exists and the credentials have read/write access to it.";
         echo "-----------------------------------------------";
