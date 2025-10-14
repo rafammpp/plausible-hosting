@@ -1,0 +1,3 @@
+[submodule "community-edition"]
+	path = community-edition
+	url = https://github.com/plausible/community-edition.git
